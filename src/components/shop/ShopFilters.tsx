@@ -1,22 +1,42 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { categories } from "@/lib/data";
 
-interface ShopFiltersProps {
-  search: string;
-  setSearch: (v: string) => void;
+interface FilterSidebarProps {
   category: string;
   setCategory: (v: string) => void;
-  priceRange: [number, number];
-  setPriceRange: (v: [number, number]) => void;
   available: boolean;
   setAvailable: (v: boolean) => void;
   open: boolean;
   setOpen: (v: boolean) => void;
 }
 
-export default function ShopFilters(props: ShopFiltersProps) {
-  const { search, setSearch, category, setCategory, available, setAvailable, open, setOpen } = props;
+interface SearchBarProps {
+  search: string;
+  setSearch: (v: string) => void;
+  onOpenFilters: () => void;
+}
 
+export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) {
+  return (
+    <div className="mb-6 flex gap-3">
+      <div className="relative flex-1">
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search products..."
+          className="w-full rounded-xl border border-input bg-card py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <button onClick={onOpenFilters} className="rounded-xl border border-border bg-card px-4 text-muted-foreground lg:hidden">
+        <SlidersHorizontal className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
+export function FilterSidebar({ category, setCategory, available, setAvailable, open, setOpen }: FilterSidebarProps) {
   const filterContent = (
     <div className="space-y-6">
       <div>
@@ -77,23 +97,6 @@ export default function ShopFilters(props: ShopFiltersProps) {
           </div>
         </div>
       )}
-
-      {/* Search bar for mobile & desktop */}
-      <div className="mb-6 flex gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="w-full rounded-xl border border-input bg-card py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <button onClick={() => setOpen(true)} className="rounded-xl border border-border bg-card px-4 text-muted-foreground lg:hidden">
-          <SlidersHorizontal className="h-4 w-4" />
-        </button>
-      </div>
     </>
   );
 }
