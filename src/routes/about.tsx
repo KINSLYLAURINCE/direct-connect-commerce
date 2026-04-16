@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
-import { Linkedin, Target, Heart, Zap, Shield } from "lucide-react";
+import { Target, Heart, Zap, Shield } from "lucide-react";
 import { teamMembers } from "@/lib/data";
 import teamImage from "@/assets/team.jpg";
 import Footer from "@/components/layout/Footer";
