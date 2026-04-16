@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { products } from "@/lib/data";
 import ProductCard from "@/components/shop/ProductCard";
-import ShopFilters from "@/components/shop/ShopFilters";
+import { SearchBar, FilterSidebar } from "@/components/shop/ShopFilters";
 import Footer from "@/components/layout/Footer";
 
 export const Route = createFileRoute("/shop")({
@@ -20,7 +20,6 @@ export const Route = createFileRoute("/shop")({
 function ShopPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [available, setAvailable] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -41,22 +40,16 @@ function ShopPage() {
           <p className="mt-2 text-muted-foreground">Enterprise-grade products for every need</p>
         </div>
 
+        <SearchBar search={search} setSearch={setSearch} onOpenFilters={() => setFilterOpen(true)} />
+
         <div className="flex gap-8">
-          <ShopFilters
-            search={search} setSearch={setSearch}
+          <FilterSidebar
             category={category} setCategory={setCategory}
-            priceRange={priceRange} setPriceRange={setPriceRange}
             available={available} setAvailable={setAvailable}
             open={filterOpen} setOpen={setFilterOpen}
           />
+
           <div className="flex-1">
-            <ShopFilters
-              search={search} setSearch={setSearch}
-              category={category} setCategory={setCategory}
-              priceRange={priceRange} setPriceRange={setPriceRange}
-              available={available} setAvailable={setAvailable}
-              open={filterOpen} setOpen={setFilterOpen}
-            />
             {filtered.length === 0 ? (
               <div className="py-20 text-center text-muted-foreground">No products found matching your criteria.</div>
             ) : (
