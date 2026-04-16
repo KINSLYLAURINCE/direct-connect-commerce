@@ -41,22 +41,26 @@ function ShopPage() {
           <p className="mt-2 text-muted-foreground">Enterprise-grade products for every need</p>
         </div>
 
+        {/* Search bar */}
+        <ShopFilters
+          search={search} setSearch={setSearch}
+          category={category} setCategory={setCategory}
+          priceRange={priceRange} setPriceRange={setPriceRange}
+          available={available} setAvailable={setAvailable}
+          open={filterOpen} setOpen={setFilterOpen}
+        />
+
         <div className="flex gap-8">
+          {/* Sidebar filter (rendered inside ShopFilters desktop sidebar) */}
           <ShopFilters
-            search={search} setSearch={setSearch}
+            search="" setSearch={() => {}}
             category={category} setCategory={setCategory}
             priceRange={priceRange} setPriceRange={setPriceRange}
             available={available} setAvailable={setAvailable}
-            open={filterOpen} setOpen={setFilterOpen}
+            open={false} setOpen={() => {}}
           />
+
           <div className="flex-1">
-            <ShopFilters
-              search={search} setSearch={setSearch}
-              category={category} setCategory={setCategory}
-              priceRange={priceRange} setPriceRange={setPriceRange}
-              available={available} setAvailable={setAvailable}
-              open={filterOpen} setOpen={setFilterOpen}
-            />
             {filtered.length === 0 ? (
               <div className="py-20 text-center text-muted-foreground">No products found matching your criteria.</div>
             ) : (
