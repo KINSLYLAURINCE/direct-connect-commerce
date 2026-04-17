@@ -7,19 +7,19 @@ export const Route = createFileRoute("/admin/analytics")({
 
 const monthlyData = [
   { month: "Jan", inquiries: 120, users: 45 },
-  { month: "Feb", inquiries: 150, users: 62 },
+  { month: "Fév", inquiries: 150, users: 62 },
   { month: "Mar", inquiries: 180, users: 78 },
-  { month: "Apr", inquiries: 220, users: 95 },
-  { month: "May", inquiries: 195, users: 110 },
-  { month: "Jun", inquiries: 260, users: 135 },
+  { month: "Avr", inquiries: 220, users: 95 },
+  { month: "Mai", inquiries: 195, users: 110 },
+  { month: "Juin", inquiries: 260, users: 135 },
 ];
 
 const topCategories = [
-  { name: "Cloud Solutions", percentage: 35 },
-  { name: "Cybersecurity", percentage: 25 },
-  { name: "DevOps Tools", percentage: 20 },
-  { name: "AI & ML", percentage: 12 },
-  { name: "Networking", percentage: 8 },
+  { name: "Mémoire de Forme", percentage: 35 },
+  { name: "Ressorts Ensachés", percentage: 25 },
+  { name: "Hybride Premium", percentage: 20 },
+  { name: "Latex Naturel", percentage: 12 },
+  { name: "Orthopédique", percentage: 8 },
 ];
 
 function AdminAnalytics() {
@@ -28,14 +28,13 @@ function AdminAnalytics() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Analytics Center</h1>
-        <p className="text-muted-foreground">Detailed insights into your business performance</p>
+        <h1 className="text-2xl font-bold text-foreground">Centre d'Analyse</h1>
+        <p className="text-muted-foreground">Statistiques détaillées de votre activité</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Monthly Inquiries */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-6 font-semibold text-foreground">Monthly Inquiries</h3>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="mb-6 font-semibold text-foreground">Demandes mensuelles</h3>
           <div className="flex h-56 items-end gap-3">
             {monthlyData.map((d, i) => (
               <div key={d.month} className="flex flex-1 flex-col items-center gap-1">
@@ -44,7 +43,7 @@ function AdminAnalytics() {
                   initial={{ height: 0 }}
                   animate={{ height: `${(d.inquiries / maxInq) * 100}%` }}
                   transition={{ delay: i * 0.1, duration: 0.6 }}
-                  className="w-full rounded-t-md bg-primary/80"
+                  className="w-full rounded-t-md bg-gradient-blue"
                 />
                 <span className="text-xs text-muted-foreground">{d.month}</span>
               </div>
@@ -52,9 +51,8 @@ function AdminAnalytics() {
           </div>
         </div>
 
-        {/* User Registrations */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-6 font-semibold text-foreground">User Registrations Growth</h3>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="mb-6 font-semibold text-foreground">Croissance des inscriptions</h3>
           <div className="flex h-56 items-end gap-3">
             {monthlyData.map((d, i) => (
               <div key={d.month} className="flex flex-1 flex-col items-center gap-1">
@@ -71,9 +69,8 @@ function AdminAnalytics() {
           </div>
         </div>
 
-        {/* Top Categories Interest */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-6 font-semibold text-foreground">Top Categories by Interest</h3>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="mb-6 font-semibold text-foreground">Catégories populaires</h3>
           <div className="space-y-4">
             {topCategories.map((cat, i) => (
               <div key={cat.name}>
@@ -86,7 +83,7 @@ function AdminAnalytics() {
                     initial={{ width: 0 }}
                     animate={{ width: `${cat.percentage}%` }}
                     transition={{ delay: i * 0.1, duration: 0.6 }}
-                    className="h-full rounded-full bg-primary"
+                    className="h-full rounded-full bg-gradient-blue"
                   />
                 </div>
               </div>
@@ -94,9 +91,8 @@ function AdminAnalytics() {
           </div>
         </div>
 
-        {/* Daily Activity */}
-        <div className="rounded-xl border border-border bg-card p-6">
-          <h3 className="mb-6 font-semibold text-foreground">Daily Activity (This Week)</h3>
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="mb-6 font-semibold text-foreground">Activité hebdomadaire</h3>
           <div className="flex h-48 items-end gap-2">
             {[22, 35, 28, 42, 38, 55, 48].map((v, i) => (
               <div key={i} className="flex flex-1 flex-col items-center gap-1">
@@ -107,7 +103,7 @@ function AdminAnalytics() {
                   className="w-full rounded-t-md bg-chart-3"
                 />
                 <span className="text-xs text-muted-foreground">
-                  {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}
+                  {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"][i]}
                 </span>
               </div>
             ))}
