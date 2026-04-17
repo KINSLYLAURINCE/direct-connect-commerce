@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Mail, ArrowUp } from "lucide-react";
+import { MessageCircle, ArrowUp } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function FloatingButtons() {
@@ -27,9 +27,9 @@ export default function FloatingButtons() {
         <AnimatePresence>
           {showTop && (
             <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, rotate: 180 }}
               onClick={scrollToTop}
               className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-lg transition-colors hover:bg-accent"
             >
@@ -38,21 +38,16 @@ export default function FloatingButtons() {
           )}
         </AnimatePresence>
 
-        <a
-          href="mailto:contact@nexscale.io"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110"
-        >
-          <Mail className="h-5 w-5" />
-        </a>
-
-        <a
-          href="https://wa.me/15550001234?text=Hello%20NexScale"
+        <motion.a
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          href="https://wa.me/33600000000?text=Bonjour%20DreamRest"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-success-foreground shadow-lg transition-transform hover:scale-110"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-success text-white shadow-2xl shadow-success/40"
         >
-          <MessageCircle className="h-5 w-5" />
-        </a>
+          <MessageCircle className="h-6 w-6" />
+        </motion.a>
       </div>
     </>
   );

@@ -8,10 +8,10 @@ import Footer from "@/components/layout/Footer";
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop — NexScale Enterprise Solutions" },
-      { name: "description", content: "Browse enterprise cloud, security, DevOps and AI solutions." },
-      { property: "og:title", content: "Shop — NexScale Enterprise Solutions" },
-      { property: "og:description", content: "Browse enterprise cloud, security, DevOps and AI solutions." },
+      { title: "Boutique — DreamRest Matelas Premium" },
+      { name: "description", content: "Découvrez tous nos matelas : mémoire de forme, ressorts, latex, hybride, orthopédique." },
+      { property: "og:title", content: "Boutique — DreamRest Matelas Premium" },
+      { property: "og:description", content: "Tous nos matelas premium fabriqués en France." },
     ],
   }),
   component: ShopPage,
@@ -36,8 +36,8 @@ function ShopPage() {
     <>
       <div className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Our Solutions</h1>
-          <p className="mt-2 text-muted-foreground">Enterprise-grade products for every need</p>
+          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Nos Matelas</h1>
+          <p className="mt-2 text-muted-foreground">Trouvez le matelas parfait pour vos nuits</p>
         </div>
 
         <SearchBar search={search} setSearch={setSearch} onOpenFilters={() => setFilterOpen(true)} />
@@ -51,7 +51,7 @@ function ShopPage() {
 
           <div className="flex-1">
             {filtered.length === 0 ? (
-              <div className="py-20 text-center text-muted-foreground">No products found matching your criteria.</div>
+              <div className="py-20 text-center text-muted-foreground">Aucun matelas ne correspond à votre recherche.</div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((product, i) => (

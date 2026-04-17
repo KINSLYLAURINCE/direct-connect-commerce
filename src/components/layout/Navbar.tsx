@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Menu, X, Moon, Sun, Search } from "lucide-react";
+import { Menu, X, Moon, Sun, Search, User } from "lucide-react";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -9,11 +9,11 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { to: "/" as const, label: "Home" },
-  { to: "/shop" as const, label: "Shop" },
-  { to: "/about" as const, label: "About" },
+  { to: "/" as const, label: "Accueil" },
+  { to: "/shop" as const, label: "Boutique" },
+  { to: "/categories" as const, label: "Catégories" },
+  { to: "/about" as const, label: "À Propos" },
   { to: "/contact" as const, label: "Contact" },
-  { to: "/admin" as const, label: "Admin" },
 ];
 
 export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
@@ -23,14 +23,19 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50 glass"
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-            <span className="text-sm font-bold text-primary-foreground">NS</span>
-          </div>
-          <span className="text-lg font-bold text-foreground">NexScale</span>
+          <motion.div
+            whileHover={{ rotate: 360, scale: 1.1 }}
+            transition={{ duration: 0.6 }}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-blue shadow-lg shadow-primary/30"
+          >
+            <span className="text-sm font-bold text-white">DR</span>
+          </motion.div>
+          <span className="text-lg font-bold text-foreground">DreamRest</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -40,7 +45,7 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
               to={link.to}
               activeProps={{ className: "text-primary bg-accent" }}
               inactiveProps={{ className: "text-muted-foreground hover:text-foreground hover:bg-accent" }}
-              className="rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+              className="rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200"
             >
               {link.label}
             </Link>
@@ -59,9 +64,9 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
           </button>
           <Link
             to="/login"
-            className="hidden rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 md:block"
+            className="hidden items-center gap-1.5 rounded-lg bg-gradient-blue px-4 py-2 text-sm font-medium text-white shadow-md shadow-primary/20 transition-transform hover:scale-105 md:inline-flex"
           >
-            Sign In
+            <User className="h-4 w-4" /> Connexion
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -92,9 +97,9 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
           <Link
             to="/login"
             onClick={() => setMobileOpen(false)}
-            className="mt-2 block rounded-lg bg-primary px-3 py-2.5 text-center text-sm font-medium text-primary-foreground"
+            className="mt-2 block rounded-lg bg-gradient-blue px-3 py-2.5 text-center text-sm font-medium text-white"
           >
-            Sign In
+            Connexion
           </Link>
         </motion.div>
       )}
