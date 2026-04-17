@@ -16,7 +16,7 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 
   useEffect(() => {
     const unsub = spring.on("change", (v) => {
-      setDisplay(value % 1 === 0 ? Math.floor(v).toLocaleString() : v.toFixed(2));
+      setDisplay(value % 1 === 0 ? Math.floor(v).toLocaleString("fr-FR") : v.toFixed(1));
     });
     return unsub;
   }, [spring, value]);
@@ -25,41 +25,39 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export default function StatsCounter() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const trustLoop = [...trustBadges, ...trustBadges, ...trustBadges];
 
   return (
-    <section ref={ref} className="bg-secondary py-20">
+    <section className="bg-secondary py-20 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
               className="text-center"
             >
-              <div className="text-4xl font-bold text-primary">
+              <div className="text-4xl font-bold text-gradient sm:text-5xl">
                 <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               </div>
               <div className="mt-2 text-sm font-medium text-muted-foreground">{stat.label}</div>
             </motion.div>
           ))}
         </div>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ delay: 0.6 }}
-          className="mt-16 flex flex-wrap items-center justify-center gap-6"
-        >
-          {trustBadges.map((badge) => (
-            <div key={badge} className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
+      {/* Trust badges marquee */}
+      <div className="relative mt-16 overflow-hidden">
+        <div className="flex w-max gap-4 animate-marquee-slow">
+          {trustLoop.map((badge, i) => (
+            <div key={`${badge}-${i}`} className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-5 py-2.5 text-sm text-muted-foreground shadow-sm">
               <Shield className="h-3.5 w-3.5 text-primary" /> {badge}
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
