@@ -50,7 +50,7 @@ function AdminCategories() {
             className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <span className="text-3xl">{cat.icon}</span>
+              <img src={cat.image} alt={cat.name} className="h-12 w-12 rounded-lg object-cover" />
               <div>
                 <div className="font-medium text-foreground">{cat.name}</div>
                 <div className="text-sm text-muted-foreground">{cat.count} matelas</div>
