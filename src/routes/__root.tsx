@@ -3,6 +3,7 @@ import Navbar from "../components/layout/Navbar";
 import MobileNav from "../components/layout/MobileNav";
 import FloatingButtons from "../components/layout/FloatingButtons";
 import { useTheme } from "../lib/theme";
+import { LanguageProvider } from "../lib/i18n";
 
 import appCss from "../styles.css?url";
 
@@ -33,8 +34,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DreamRest — Matelas Premium Made in France" },
-      { name: "description", content: "Matelas mémoire de forme, ressorts, latex et hybride. Livraison 48h, 100 nuits d'essai." },
+      { title: "DreamRest — Matelas Premium" },
+      { name: "description", content: "Matelas mémoire de forme, ressorts, latex et hybride. Livraison rapide, 100 nuits d'essai." },
       { property: "og:title", content: "DreamRest — Matelas Premium" },
       { property: "og:description", content: "Le sommeil que vous méritez." },
       { property: "og:type", content: "website" },
@@ -67,13 +68,13 @@ function RootComponent() {
   const { isDark, toggle } = useTheme();
 
   return (
-    <>
+    <LanguageProvider>
       <Navbar isDark={isDark} toggleTheme={toggle} />
       <main className="min-h-screen">
         <Outlet />
       </main>
       <MobileNav />
       <FloatingButtons />
-    </>
+    </LanguageProvider>
   );
 }

@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 export default function HeroSection() {
+  const { t } = useLang();
   return (
     <section className="relative overflow-hidden bg-background pt-24 pb-16 lg:pt-32 lg:pb-24">
-      {/* Animated blobs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary opacity-[0.12] blur-3xl animate-blob" />
         <div className="absolute top-1/3 -right-32 h-96 w-96 rounded-full bg-chart-2 opacity-[0.15] blur-3xl animate-blob" style={{ animationDelay: "5s" }} />
@@ -26,17 +27,14 @@ export default function HeroSection() {
               className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              Nouvelle collection 2026
+              {t("hero.badge")}
             </motion.div>
 
             <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Le sommeil que vous{" "}
-              <span className="text-gradient">méritez</span>
+              {t("hero.title.1")}{" "}<span className="text-gradient">{t("hero.title.2")}</span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
-              Découvrez nos matelas premium fabriqués en France. Mémoire de forme, ressorts ensachés, latex naturel — votre confort, notre obsession.
-            </p>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">{t("hero.subtitle")}</p>
 
             <div className="mt-6 flex items-center gap-4">
               <div className="flex">
@@ -44,7 +42,7 @@ export default function HeroSection() {
                   <Star key={i} className="h-4 w-4 fill-warning text-warning" />
                 ))}
               </div>
-              <span className="text-sm text-muted-foreground"><strong className="text-foreground">4.9/5</strong> · 25 000 clients</span>
+              <span className="text-sm text-muted-foreground"><strong className="text-foreground">4.9/5</strong> · 25 000 {t("hero.rating")}</span>
             </div>
 
             <div className="mt-8 flex flex-wrap gap-4">
@@ -52,13 +50,13 @@ export default function HeroSection() {
                 to="/shop"
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-blue px-6 py-3 text-sm font-semibold text-white shadow-xl shadow-primary/30 transition-all hover:scale-105"
               >
-                Voir nos matelas <ArrowRight className="h-4 w-4" />
+                {t("hero.cta.shop")} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/categories"
                 className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all hover:bg-accent"
               >
-                <Sparkles className="h-4 w-4" /> Explorer
+                <Sparkles className="h-4 w-4" /> {t("hero.cta.explore")}
               </Link>
             </div>
           </motion.div>
@@ -87,17 +85,17 @@ export default function HeroSection() {
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -bottom-4 -left-4 rounded-2xl border border-border bg-card p-4 shadow-xl"
             >
-              <div className="text-xs font-medium text-muted-foreground">Livraison express</div>
+              <div className="text-xs font-medium text-muted-foreground">{t("hero.delivery")}</div>
               <div className="text-2xl font-bold text-foreground">48h</div>
-              <div className="text-xs text-success">↑ Partout en France</div>
+              <div className="text-xs text-success">↑ {t("hero.everywhere")}</div>
             </motion.div>
             <motion.div
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -top-4 -right-4 rounded-2xl border border-border bg-card p-4 shadow-xl"
             >
-              <div className="text-xs font-medium text-muted-foreground">Essai gratuit</div>
-              <div className="text-2xl font-bold text-primary">100 nuits</div>
+              <div className="text-xs font-medium text-muted-foreground">{t("hero.trial")}</div>
+              <div className="text-2xl font-bold text-primary">{t("hero.nights")}</div>
             </motion.div>
           </motion.div>
         </div>

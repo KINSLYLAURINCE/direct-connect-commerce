@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { MessageCircle, Mail, ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
-import { products } from "@/lib/data";
+import { products, formatFCFA } from "@/lib/data";
 import { useState } from "react";
 import Footer from "@/components/layout/Footer";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/products/$productId")({
   head: ({ params }) => {
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/products/$productId")({
     <div className="flex min-h-screen items-center justify-center">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">Matelas introuvable</h1>
-        <Link to="/shop" className="mt-4 inline-block text-primary">Retour à la boutique</Link>
+        <Link to="/shop" className="mt-4 inline-block text-primary">Retour</Link>
       </div>
     </div>
   ),
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/products/$productId")({
 
 function ProductDetailPage() {
   const { productId } = Route.useParams();
+  const { t, lang } = useLang();
   const product = products.find((p) => p.id === productId);
   const [imgIdx, setImgIdx] = useState(0);
 
@@ -38,28 +40,33 @@ function ProductDetailPage() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground">Matelas introuvable</h1>
-          <Link to="/shop" className="mt-4 inline-block text-primary">Retour à la boutique</Link>
+          <h1 className="text-2xl font-bold text-foreground">{t("prod.notFound")}</h1>
+          <Link to="/shop" className="mt-4 inline-block text-primary">{t("prod.back")}</Link>
         </div>
       </div>
     );
   }
 
+  const name = lang === "fr" ? product.name : (product.nameEn ?? product.name);
+  const description = lang === "fr" ? product.description : (product.descriptionEn ?? product.description);
+  const features = lang === "fr" ? product.features : (product.featuresEn ?? product.features);
+  const badge = product.badge ? (lang === "fr" ? product.badge : (product.badgeEn ?? product.badge)) : null;
+  const priceLabel = formatFCFA(product.price);
+
   const images = [product.image, product.image, product.image];
 
   const whatsappMsg = encodeURIComponent(
-    `Bonjour DreamRest !\n\nJe suis intéressé par :\n- Matelas : ${product.name}\n- Référence : ${product.id}\n- Prix : ${product.price} €`
+    `Bonjour DreamRest !\n\nJe suis intéressé par :\n- Matelas : ${product.name}\n- Référence : ${product.id}\n- Prix : ${priceLabel}`
   );
-
   const emailBody = encodeURIComponent(
-    `Demande d'information\n\nMatelas : ${product.name}\nRéférence : ${product.id}\nPrix : ${product.price} €`
+    `Demande d'information\n\nMatelas : ${product.name}\nRéférence : ${product.id}\nPrix : ${priceLabel}`
   );
 
   return (
     <>
       <div className="mx-auto max-w-7xl px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <Link to="/shop" className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Retour à la boutique
+          <ArrowLeft className="h-4 w-4" /> {t("prod.back")}
         </Link>
 
         <div className="grid gap-12 lg:grid-cols-2">
@@ -71,7 +78,7 @@ function ProductDetailPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
                 src={images[imgIdx]}
-                alt={product.name}
+                alt={name}
                 className="aspect-[4/3] w-full object-cover"
               />
               <button onClick={() => setImgIdx((i) => (i - 1 + images.length) % images.length)} className="absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-card/80 p-2 shadow backdrop-blur">
@@ -80,10 +87,8 @@ function ProductDetailPage() {
               <button onClick={() => setImgIdx((i) => (i + 1) % images.length)} className="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-card/80 p-2 shadow backdrop-blur">
                 <ChevronRight className="h-4 w-4" />
               </button>
-              {product.badge && (
-                <span className="absolute top-4 left-4 rounded-full bg-gradient-blue px-4 py-1.5 text-sm font-semibold text-white shadow-lg">
-                  {product.badge}
-                </span>
+              {badge && (
+                <span className="absolute top-4 left-4 rounded-full bg-gradient-blue px-4 py-1.5 text-sm font-semibold text-white shadow-lg">{badge}</span>
               )}
             </div>
             <div className="mt-4 flex gap-3">
@@ -101,21 +106,21 @@ function ProductDetailPage() {
 
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="text-xs font-medium uppercase tracking-wider text-primary">{product.category}</div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">{product.name}</h1>
-            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{product.description}</p>
+            <h1 className="mt-2 text-3xl font-bold text-foreground sm:text-4xl">{name}</h1>
+            <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{description}</p>
 
-            <div className="mt-6 text-4xl font-bold text-gradient">{product.price} €</div>
+            <div className="mt-6 text-4xl font-bold text-gradient">{priceLabel}</div>
 
             <div className="mt-4 flex items-center gap-2 text-sm">
               <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${product.available ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
-                {product.available ? "En stock" : "Bientôt disponible"}
+                {product.available ? t("prod.inStock") : t("prod.soon")}
               </span>
             </div>
 
             <div className="mt-8">
-              <h3 className="text-sm font-semibold text-foreground">Caractéristiques</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("prod.features")}</h3>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                {product.features.map((f) => (
+                {features.map((f) => (
                   <div key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="h-4 w-4 text-primary" /> {f}
                   </div>
@@ -124,7 +129,7 @@ function ProductDetailPage() {
             </div>
 
             <div className="mt-8">
-              <h3 className="text-sm font-semibold text-foreground">Spécifications techniques</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("prod.specs")}</h3>
               <div className="mt-3 divide-y divide-border rounded-xl border border-border">
                 {Object.entries(product.specs).map(([key, val]) => (
                   <div key={key} className="flex items-center justify-between px-4 py-3 text-sm">
@@ -137,7 +142,7 @@ function ProductDetailPage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <a
-                href={`https://wa.me/33600000000?text=${whatsappMsg}`}
+                href={`https://wa.me/221770000000?text=${whatsappMsg}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-success py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
@@ -145,7 +150,7 @@ function ProductDetailPage() {
                 <MessageCircle className="h-5 w-5" /> WhatsApp
               </a>
               <a
-                href={`mailto:contact@dreamrest.fr?subject=Demande: ${product.name}&body=${emailBody}`}
+                href={`mailto:contact@dreamrest.com?subject=Demande: ${product.name}&body=${emailBody}`}
                 className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-blue py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
               >
                 <Mail className="h-5 w-5" /> Email

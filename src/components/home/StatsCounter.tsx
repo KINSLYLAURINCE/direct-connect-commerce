@@ -1,6 +1,7 @@
 import { motion, useInView, useSpring, useMotionValue } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { stats, trustBadges } from "@/lib/data";
+import { useLang } from "@/lib/i18n";
 import { Shield } from "lucide-react";
 
 function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
@@ -25,10 +26,10 @@ function AnimatedNumber({ value, suffix }: { value: number; suffix: string }) {
 }
 
 export default function StatsCounter() {
-  const trustLoop = [...trustBadges, ...trustBadges, ...trustBadges];
+  const { lang } = useLang();
 
   return (
-    <section className="bg-secondary py-20 overflow-hidden">
+    <section className="bg-secondary py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (
@@ -43,18 +44,19 @@ export default function StatsCounter() {
               <div className="text-4xl font-bold text-gradient sm:text-5xl">
                 <AnimatedNumber value={stat.value} suffix={stat.suffix} />
               </div>
-              <div className="mt-2 text-sm font-medium text-muted-foreground">{stat.label}</div>
+              <div className="mt-2 text-sm font-medium text-muted-foreground">
+                {lang === "fr" ? stat.label : stat.labelEn}
+              </div>
             </motion.div>
           ))}
         </div>
-      </div>
 
-      {/* Trust badges marquee */}
-      <div className="relative mt-16 overflow-hidden">
-        <div className="flex w-max gap-4 animate-marquee-slow">
-          {trustLoop.map((badge, i) => (
-            <div key={`${badge}-${i}`} className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-5 py-2.5 text-sm text-muted-foreground shadow-sm">
-              <Shield className="h-3.5 w-3.5 text-primary" /> {badge}
+        {/* Static trust badges */}
+        <div className="mt-16 flex flex-wrap items-center justify-center gap-3">
+          {trustBadges.map((badge) => (
+            <div key={badge.fr} className="flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-card px-5 py-2.5 text-sm text-muted-foreground shadow-sm">
+              <Shield className="h-3.5 w-3.5 text-primary" />
+              {lang === "fr" ? badge.fr : badge.en}
             </div>
           ))}
         </div>

@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 export default function Footer() {
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
@@ -22,24 +24,25 @@ export default function Footer() {
               </div>
               <span className="text-lg font-bold text-foreground">DreamRest</span>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Le sommeil que vous méritez. Des matelas premium pour toute la famille, livrés en 48h partout en France.
-            </p>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t("footer.tagline")}</p>
             <div className="mt-6 space-y-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" /> contact@dreamrest.fr
+                <Mail className="h-4 w-4" />
+                <span>contact@dreamrest.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" /> +33 1 23 45 67 89
+                <Phone className="h-4 w-4" />
+                <span>+221 77 000 00 00</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" /> Paris, France
+                <MapPin className="h-4 w-4" />
+                <span>Dakar, Sénégal</span>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Matelas</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("footer.mattresses")}</h3>
             <ul className="mt-4 space-y-3">
               {["Mémoire de forme", "Ressorts ensachés", "Latex naturel", "Hybride premium"].map((item) => (
                 <li key={item}>
@@ -50,13 +53,13 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Entreprise</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("footer.company")}</h3>
             <ul className="mt-4 space-y-3">
               {[
-                { label: "À Propos", to: "/about" as const },
-                { label: "Contact", to: "/contact" as const },
-                { label: "Carrières", to: "/about" as const },
-                { label: "Blog", to: "/about" as const },
+                { label: t("nav.about"), to: "/about" as const },
+                { label: t("nav.contact"), to: "/contact" as const },
+                { label: t("footer.careers"), to: "/about" as const },
+                { label: t("footer.blog"), to: "/about" as const },
               ].map((item) => (
                 <li key={item.label}>
                   <Link to={item.to} className="text-sm text-muted-foreground transition-colors hover:text-primary">{item.label}</Link>
@@ -66,18 +69,18 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
-            <p className="mt-4 text-sm text-muted-foreground">Restez informés de nos offres et nouveautés.</p>
+            <h3 className="text-sm font-semibold text-foreground">{t("footer.newsletter")}</h3>
+            <p className="mt-4 text-sm text-muted-foreground">{t("footer.newsletterDesc")}</p>
             <form onSubmit={handleSubscribe} className="mt-4">
               {subscribed ? (
-                <p className="text-sm font-medium text-success">Merci pour votre inscription !</p>
+                <p className="text-sm font-medium text-success">{t("footer.subscribed")}</p>
               ) : (
                 <div className="flex gap-2">
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@email.fr"
+                    placeholder="email@example.com"
                     className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   />
@@ -91,7 +94,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} DreamRest. Tous droits réservés.
+          © 2026 DreamRest. {t("footer.rights")}
         </div>
       </div>
     </footer>

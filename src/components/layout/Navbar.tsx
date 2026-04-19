@@ -1,23 +1,35 @@
-import { Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
-import { Menu, X, Moon, Sun, Search, User } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, Moon, Sun, Search, User, Globe } from "lucide-react";
 import { useState } from "react";
+import { useLang } from "@/lib/i18n";
 
 interface NavbarProps {
   isDark: boolean;
   toggleTheme: () => void;
 }
 
-const navLinks = [
-  { to: "/" as const, label: "Accueil" },
-  { to: "/shop" as const, label: "Boutique" },
-  { to: "/categories" as const, label: "Catégories" },
-  { to: "/about" as const, label: "À Propos" },
-  { to: "/contact" as const, label: "Contact" },
-];
-
 export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+  const { lang, setLang, t } = useLang();
+
+  const navLinks = [
+    { to: "/" as const, label: t("nav.home") },
+    { to: "/shop" as const, label: t("nav.shop") },
+    { to: "/categories" as const, label: t("nav.categories") },
+    { to: "/about" as const, label: t("nav.about") },
+    { to: "/contact" as const, label: t("nav.contact") },
+  ];
+
+  const submitSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate({ to: "/shop", search: { q: query, category: "" } });
+    setSearchOpen(false);
+    setMobileOpen(false);
+  };
 
   return (
     <motion.header
@@ -52,12 +64,24 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <button className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <button
+            onClick={() => setSearchOpen((s) => !s)}
+            aria-label="Search"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
             <Search className="h-4 w-4" />
           </button>
           <button
+            onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+            aria-label="Language"
+            className="flex items-center gap-1 rounded-lg p-2 text-xs font-semibold uppercase text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Globe className="h-4 w-4" /> {lang}
+          </button>
+          <button
             onClick={toggleTheme}
+            aria-label="Theme"
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -66,16 +90,42 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
             to="/login"
             className="hidden items-center gap-1.5 rounded-lg bg-gradient-blue px-4 py-2 text-sm font-medium text-white shadow-md shadow-primary/20 transition-transform hover:scale-105 md:inline-flex"
           >
-            <User className="h-4 w-4" /> Connexion
+            <User className="h-4 w-4" /> {t("nav.login")}
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="rounded-lg p-2 text-muted-foreground md:hidden"
+            aria-label="Menu"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.form
+            onSubmit={submitSearch}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="border-t border-border bg-background/95 px-4 py-3 backdrop-blur"
+          >
+            <div className="mx-auto flex max-w-3xl gap-2">
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t("nav.search.placeholder")}
+                className="flex-1 rounded-lg border border-input bg-card px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <button type="submit" className="rounded-lg bg-gradient-blue px-4 py-2 text-sm font-medium text-white">
+                <Search className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.form>
+        )}
+      </AnimatePresence>
 
       {mobileOpen && (
         <motion.div
@@ -99,7 +149,7 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
             onClick={() => setMobileOpen(false)}
             className="mt-2 block rounded-lg bg-gradient-blue px-3 py-2.5 text-center text-sm font-medium text-white"
           >
-            Connexion
+            {t("nav.login")}
           </Link>
         </motion.div>
       )}

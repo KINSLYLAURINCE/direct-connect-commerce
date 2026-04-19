@@ -1,5 +1,6 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { categories } from "@/lib/data";
+import { useLang } from "@/lib/i18n";
 
 interface FilterSidebarProps {
   category: string;
@@ -17,6 +18,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) {
+  const { t } = useLang();
   return (
     <div className="mb-6 flex gap-3">
       <div className="relative flex-1">
@@ -25,7 +27,7 @@ export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) 
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un matelas..."
+          placeholder={t("nav.search.placeholder")}
           className="w-full rounded-xl border border-input bg-card py-2.5 pr-4 pl-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
@@ -37,16 +39,17 @@ export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) 
 }
 
 export function FilterSidebar({ category, setCategory, available, setAvailable, open, setOpen }: FilterSidebarProps) {
+  const { t, lang } = useLang();
   const filterContent = (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-foreground">Catégorie</h3>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">{t("shop.category")}</h3>
         <div className="space-y-2">
           <button
             onClick={() => setCategory("")}
             className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${!category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
           >
-            Toutes les catégories
+            {t("shop.allCategories")}
           </button>
           {categories.map((c) => (
             <button
@@ -54,7 +57,8 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
               onClick={() => setCategory(c.id === category ? "" : c.id)}
               className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${c.id === category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
             >
-              <span>{c.icon}</span> {c.name}
+              <img src={c.image} alt="" className="h-6 w-6 rounded object-cover" />
+              <span>{lang === "fr" ? c.name : c.nameEn}</span>
               <span className="ml-auto text-xs opacity-60">{c.count}</span>
             </button>
           ))}
@@ -62,10 +66,10 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-foreground">Disponibilité</h3>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">{t("shop.availability")}</h3>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
           <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} className="rounded accent-primary" />
-          Uniquement disponibles
+          {t("shop.onlyAvailable")}
         </label>
       </div>
     </div>
@@ -76,7 +80,7 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
       <div className="hidden w-64 shrink-0 lg:block">
         <div className="sticky top-24 rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-foreground">Filtres</h2>
+            <h2 className="font-semibold text-foreground">{t("shop.filters")}</h2>
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
           </div>
           {filterContent}
@@ -88,7 +92,7 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
           <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className="absolute top-0 left-0 h-full w-72 overflow-y-auto border-r border-border bg-background p-5">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="font-semibold text-foreground">Filtres</h2>
+              <h2 className="font-semibold text-foreground">{t("shop.filters")}</h2>
               <button onClick={() => setOpen(false)} className="text-muted-foreground"><X className="h-5 w-5" /></button>
             </div>
             {filterContent}
