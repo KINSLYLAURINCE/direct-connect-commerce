@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Category } from "@/lib/data";
+import ImagePicker from "./ImagePicker";
 
 interface CategoryFormProps {
   initial?: Partial<Category>;
@@ -12,11 +13,17 @@ export default function CategoryForm({ initial, onSubmit, onCancel }: CategoryFo
     name: initial?.name ?? "",
     nameEn: initial?.nameEn ?? "",
     image: initial?.image ?? "",
-    count: initial?.count ?? 0,
   });
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(data); }} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (!data.image) { alert("Veuillez ajouter une image."); return; }
+        onSubmit(data);
+      }}
+      className="space-y-4"
+    >
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Nom de la catégorie (FR)</label>
         <input
@@ -36,28 +43,13 @@ export default function CategoryForm({ initial, onSubmit, onCancel }: CategoryFo
           placeholder="Ex: Memory Foam"
         />
       </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">URL de l'image</label>
-        <input
-          required
-          value={data.image}
-          onChange={(e) => setData({ ...data, image: e.target.value })}
-          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="https://images.unsplash.com/..."
-        />
-        {data.image && (
-          <img src={data.image} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" />
-        )}
-      </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Nombre de produits</label>
-        <input
-          type="number"
-          value={data.count}
-          onChange={(e) => setData({ ...data, count: Number(e.target.value) })}
-          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+
+      <ImagePicker
+        label="Image de la catégorie"
+        value={data.image ?? ""}
+        onChange={(url) => setData({ ...data, image: url })}
+      />
+
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent">
           Annuler
