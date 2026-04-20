@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useLang } from "@/lib/i18n";
 import type { Product } from "@/lib/data";
 import { formatFCFA } from "@/lib/data";
+import { COUNTRIES, findCountry } from "@/lib/countries";
 
-// WhatsApp brand icon (since lucide doesn't ship one consistently styled)
+// WhatsApp brand icon
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -14,19 +15,13 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-const COUNTRIES = [
-  "Sénégal", "Côte d'Ivoire", "Mali", "Burkina Faso", "Guinée", "Bénin", "Togo",
-  "Cameroun", "Gabon", "Congo", "Niger", "Tchad", "France", "Maroc", "Algérie",
-  "Tunisie", "Mauritanie", "Autre",
-];
-
 const WHATSAPP_NUMBER = "221770000000"; // change as needed
 
 const schema = z.object({
   firstName: z.string().trim().min(1).max(60),
   lastName: z.string().trim().min(1).max(60),
   country: z.string().trim().min(1),
-  phone: z.string().trim().min(6).max(25).regex(/^[+\d\s().-]+$/),
+  phone: z.string().trim().min(4).max(25).regex(/^[\d\s().-]+$/),
   email: z.string().trim().email().max(120),
 });
 
@@ -35,9 +30,11 @@ interface Props {
 }
 
 export default function ProductInquiryForm({ product }: Props) {
-  const { t, lang } = useLang();
+  const { lang } = useLang();
   const [form, setForm] = useState({ firstName: "", lastName: "", country: "Sénégal", phone: "", email: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const dial = useMemo(() => findCountry(form.country)?.dial ?? "", [form.country]);
 
   const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -54,6 +51,7 @@ export default function ProductInquiryForm({ product }: Props) {
     }
     setErrors({});
     const productName = lang === "fr" ? product.name : (product.nameEn ?? product.name);
+    const fullPhone = `${dial} ${parsed.data.phone}`.trim();
     const intro = lang === "fr" ? "Bonjour ETCG ! Je souhaite commander :" : "Hello ETCG! I would like to order:";
     const labels = lang === "fr"
       ? { p: "Produit", r: "Réf.", pr: "Prix", n: "Nom", pn: "Prénom", c: "Pays", t: "Téléphone", e: "Email" }
@@ -64,20 +62,20 @@ export default function ProductInquiryForm({ product }: Props) {
 
 • ${labels.p} : ${productName}
 • ${labels.r} : ${product.id}
-• ${labels.pr} : ${formatFCFA(product.price)}
+• ${labels.pr} : ${formatFCFA(product.salePrice ?? product.price)}
 
 — ${labels.pn} : ${parsed.data.firstName}
 — ${labels.n} : ${parsed.data.lastName}
 — ${labels.c} : ${parsed.data.country}
-— ${labels.t} : ${parsed.data.phone}
+— ${labels.t} : ${fullPhone}
 — ${labels.e} : ${parsed.data.email}`;
 
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank", "noopener,noreferrer");
   };
 
   const labels = lang === "fr"
-    ? { title: "Commander ce produit", sub: "Remplissez vos coordonnées — nous vous contactons sur WhatsApp.", first: "Prénom", last: "Nom", country: "Pays", phone: "Numéro de téléphone", email: "Email", send: "Envoyer sur WhatsApp" }
-    : { title: "Order this product", sub: "Fill your details — we'll reach out on WhatsApp.", first: "First name", last: "Last name", country: "Country", phone: "Phone number", email: "Email", send: "Send on WhatsApp" };
+    ? { title: "Commander ce produit", sub: "Remplissez vos coordonnées — nous vous contactons sur WhatsApp.", first: "Prénom", last: "Nom", country: "Pays", phone: "Numéro", email: "Email", send: "Envoyer sur WhatsApp" }
+    : { title: "Order this product", sub: "Fill your details — we'll reach out on WhatsApp.", first: "First name", last: "Last name", country: "Country", phone: "Number", email: "Email", send: "Send on WhatsApp" };
 
   const inputCls = "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors";
 
@@ -103,11 +101,24 @@ export default function ProductInquiryForm({ product }: Props) {
         </div>
         <div>
           <select className={inputCls} value={form.country} onChange={update("country")}>
-            {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.name}>{c.flag} {c.name} ({c.dial})</option>
+            ))}
           </select>
         </div>
         <div>
-          <input className={inputCls} placeholder={labels.phone} value={form.phone} onChange={update("phone")} inputMode="tel" />
+          <div className="flex">
+            <span className="inline-flex select-none items-center rounded-l-lg border border-r-0 border-input bg-secondary/60 px-3 text-sm font-medium text-foreground">
+              {dial || "+—"}
+            </span>
+            <input
+              className={`${inputCls} rounded-l-none`}
+              placeholder={labels.phone}
+              value={form.phone}
+              onChange={update("phone")}
+              inputMode="tel"
+            />
+          </div>
           {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
         </div>
         <div className="sm:col-span-2">
@@ -126,7 +137,9 @@ export default function ProductInquiryForm({ product }: Props) {
         {labels.send}
       </motion.button>
 
-      <p className="mt-3 text-center text-[11px] text-muted-foreground">{t("prod.inStock") /* keeps i18n usage */ ? "" : ""}🔒 {lang === "fr" ? "Vos informations restent confidentielles." : "Your information stays confidential."}</p>
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        🔒 {lang === "fr" ? "Vos informations restent confidentielles." : "Your information stays confidential."}
+      </p>
     </motion.form>
   );
 }

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation, useNavigate, redirect } from "@tanstack/react-router";
-import { LayoutDashboard, Package, Grid3X3, Users, MessageCircle, BarChart3, Mail, Settings, ChevronLeft, Menu, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Package, Grid3X3, ShoppingBag, MessageCircle, BarChart3, Mail, Settings, ChevronLeft, Menu, LogOut, Home } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -25,7 +25,7 @@ const navItems = [
   { to: "/admin" as const, icon: LayoutDashboard, label: "Vue d'ensemble", exact: true },
   { to: "/admin/products" as const, icon: Package, label: "Matelas", exact: false },
   { to: "/admin/categories" as const, icon: Grid3X3, label: "Catégories", exact: false },
-  { to: "/admin/users" as const, icon: Users, label: "Clients", exact: false },
+  { to: "/admin/orders" as const, icon: ShoppingBag, label: "Commandes", exact: false },
   { to: "/admin/messages" as const, icon: MessageCircle, label: "Messages", exact: false },
   { to: "/admin/analytics" as const, icon: BarChart3, label: "Statistiques", exact: false },
   { to: "/admin/newsletter" as const, icon: Mail, label: "Newsletter", exact: false },

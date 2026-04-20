@@ -5,8 +5,10 @@ export interface Product {
   description: string;
   descriptionEn?: string;
   price: number; // FCFA
+  salePrice?: number; // FCFA — prix de solde optionnel
   category: string;
-  image: string;
+  image: string;        // image principale
+  images?: string[];    // sous-images (galerie)
   badge?: string;
   badgeEn?: string;
   available: boolean;
@@ -20,7 +22,7 @@ export interface Category {
   name: string;
   nameEn: string;
   image: string;
-  count: number;
+  count?: number; // calculé dynamiquement
 }
 
 export const categories: Category[] = [

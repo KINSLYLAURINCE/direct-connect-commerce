@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Package, Users, MessageCircle, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Package, ShoppingBag, MessageCircle, TrendingUp, ArrowUpRight } from "lucide-react";
 import { products } from "@/lib/data";
 
 export const Route = createFileRoute("/admin/")({
@@ -8,10 +8,10 @@ export const Route = createFileRoute("/admin/")({
 });
 
 const kpis = [
-  { label: "Total Matelas", value: "12", change: "+2", icon: Package },
-  { label: "Clients Inscrits", value: "2 547", change: "+12%", icon: Users },
-  { label: "Demandes du jour", value: "34", change: "+8%", icon: MessageCircle },
-  { label: "Croissance mensuelle", value: "18%", change: "+3%", icon: TrendingUp },
+  { label: "Total Produits",       value: "12",  change: "+2",   icon: Package },
+  { label: "Commandes du mois",    value: "184", change: "+12%", icon: ShoppingBag },
+  { label: "Demandes du jour",     value: "34",  change: "+8%",  icon: MessageCircle },
+  { label: "Croissance mensuelle", value: "18%", change: "+3%",  icon: TrendingUp },
 ];
 
 const recentInquiries = [
