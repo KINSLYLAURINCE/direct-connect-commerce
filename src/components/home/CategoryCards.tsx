@@ -1,10 +1,53 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import { categories } from "@/lib/data";
+import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n";
+import { api, type Category } from "@/lib/api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function CategoryCards() {
   const { t, lang } = useLang();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await api.getCategories();
+      setCategories(data);
+    } catch (err) {
+      console.error('Erreur chargement catégories:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getImageUrl = (imagePath: string | null): string => {
+    if (!imagePath) return 'https://via.placeholder.com/400x240?text=No+Image';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:5000${imagePath}`;
+  };
+
+  if (loading) {
+    return (
+      <section className="bg-background py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
     <section className="bg-background py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -19,7 +62,7 @@ export default function CategoryCards() {
         </motion.div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((cat, i) => (
+          {categories.slice(0, 6).map((cat, i) => (
             <motion.div
               key={cat.id}
               initial={{ opacity: 0, y: 30 }}
@@ -28,18 +71,25 @@ export default function CategoryCards() {
               transition={{ delay: i * 0.08 }}
               whileHover={{ y: -8, scale: 1.02 }}
             >
-              <Link to="/shop" search={{ category: cat.id }} className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30">
-                <div className="relative aspect-[5/3] overflow-hidden">
+              <Link 
+                to="/shop" 
+                search={{ category: cat.id }} 
+                className="group block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30"
+              >
+                <div className="relative aspect-[5/3] overflow-hidden bg-gray-100">
                   <img
-                    src={cat.image}
-                    alt={lang === "fr" ? cat.name : cat.nameEn}
+                    src={getImageUrl(cat.image)}
+                    alt={cat.name}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x240?text=No+Image';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/10 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-4">
-                    <h3 className="text-lg font-semibold text-white">{lang === "fr" ? cat.name : cat.nameEn}</h3>
-                    <p className="text-sm text-white/80">{cat.count} {t("cat.models")}</p>
+                    <h3 className="text-lg font-semibold text-white">{cat.name}</h3>
+                    <p className="text-sm text-white/80">{cat.quantity} {t("cat.models")}</p>
                   </div>
                 </div>
               </Link>

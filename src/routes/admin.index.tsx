@@ -1,28 +1,122 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { Package, ShoppingBag, MessageCircle, TrendingUp, ArrowUpRight } from "lucide-react";
-import { products } from "@/lib/data";
+import { useState, useEffect } from "react";
+import { api, type Product, type WhatsAppInquiry, type ContactMessage } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminOverview,
 });
 
-const kpis = [
-  { label: "Total Produits",       value: "12",  change: "+2",   icon: Package },
-  { label: "Commandes du mois",    value: "184", change: "+12%", icon: ShoppingBag },
-  { label: "Demandes du jour",     value: "34",  change: "+8%",  icon: MessageCircle },
-  { label: "Croissance mensuelle", value: "18%", change: "+3%",  icon: TrendingUp },
-];
-
-const recentInquiries = [
-  { name: "Marie Dupont", product: "CloudRest Mémoire 24cm", via: "WhatsApp", time: "il y a 2 min" },
-  { name: "Pierre Martin", product: "OrthoSpring Premium", via: "Email", time: "il y a 15 min" },
-  { name: "Léa Bernard", product: "BioLatex Nature", via: "WhatsApp", time: "il y a 1 h" },
-  { name: "Thomas Petit", product: "HybridLuxe Royal", via: "Email", time: "il y a 2 h" },
-  { name: "Camille Roux", product: "DorsiCare Ortho", via: "WhatsApp", time: "il y a 3 h" },
-];
-
 function AdminOverview() {
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalInquiries: 0,
+    totalMessages: 0,
+    recentInquiries: [] as WhatsAppInquiry[],
+    products: [] as Product[],
+    productInquiryCounts: {} as Record<string, number>
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const [products, inquiries, messages] = await Promise.all([
+        api.getProducts(),
+        api.getWhatsAppInquiries(),
+        api.getContactMessages()
+      ]);
+
+      const productInquiryCounts: Record<string, number> = {};
+      inquiries.forEach(inq => {
+        if (inq.product_id) {
+          productInquiryCounts[inq.product_id] = (productInquiryCounts[inq.product_id] || 0) + 1;
+        }
+      });
+
+      const sortedInquiries = [...inquiries].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setStats({
+        totalProducts: products.length,
+        totalInquiries: inquiries.length,
+        totalMessages: messages.length,
+        recentInquiries: sortedInquiries.slice(0, 5),
+        products,
+        productInquiryCounts
+      });
+    } catch (err) {
+      console.error('Erreur chargement stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "à l'instant";
+    if (diffMins < 60) return `il y a ${diffMins} min`;
+    if (diffHours < 24) return `il y a ${diffHours} h`;
+    return `il y a ${diffDays} j`;
+  };
+
+  const topProducts = [...stats.products]
+    .map(p => ({
+      ...p,
+      inquiryCount: stats.productInquiryCounts[p.id] || 0
+    }))
+    .sort((a, b) => b.inquiryCount - a.inquiryCount)
+    .slice(0, 5);
+
+  const kpis = [
+    { 
+      label: "Total Produits", 
+      value: stats.totalProducts.toString(), 
+      change: `+${stats.totalProducts}`, 
+      icon: Package 
+    },
+    { 
+      label: "Commandes WhatsApp", 
+      value: stats.totalInquiries.toString(), 
+      change: `+${stats.totalInquiries}`, 
+      icon: ShoppingBag 
+    },
+    { 
+      label: "Messages contact", 
+      value: stats.totalMessages.toString(), 
+      change: `+${stats.totalMessages}`, 
+      icon: MessageCircle 
+    },
+    { 
+      label: "Taux conversion", 
+      value: stats.totalProducts > 0 ? `${Math.round((stats.totalInquiries / stats.totalProducts) * 10)}%` : "0%", 
+      change: "+0%", 
+      icon: TrendingUp 
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Chargement du tableau de bord...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div>
@@ -56,78 +150,101 @@ function AdminOverview() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h3 className="mb-4 font-semibold text-foreground">Demandes (7 derniers jours)</h3>
-          <div className="flex h-48 items-end gap-2">
-            {[35, 52, 41, 68, 55, 78, 62].map((v, i) => (
-              <motion.div
-                key={i}
-                initial={{ height: 0 }}
-                animate={{ height: `${(v / 80) * 100}%` }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-                className="flex-1 rounded-t-md bg-gradient-blue"
-              />
-            ))}
-          </div>
-          <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => (
-              <span key={d}>{d}</span>
-            ))}
-          </div>
+          <h3 className="mb-4 font-semibold text-foreground">Produits les plus demandés</h3>
+          {topProducts.length > 0 ? (
+            <div className="space-y-3">
+              {topProducts.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  className="flex items-center gap-3"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-xs font-bold text-muted-foreground">
+                    {i + 1}
+                  </span>
+                  <img 
+                    src={p.main_image ? `http://localhost:5000${p.main_image}` : '/placeholder.jpg'} 
+                    alt={p.name} 
+                    className="h-10 w-10 rounded-lg object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-foreground">{p.name}</div>
+                    <div className="text-xs text-muted-foreground">{p.category_name || 'Sans catégorie'}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-primary">
+                    {p.inquiryCount} demande{p.inquiryCount > 1 ? 's' : ''}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Aucun produit</p>
+          )}
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-          <h3 className="mb-4 font-semibold text-foreground">Matelas les plus demandés</h3>
-          <div className="space-y-3">
-            {products.slice(0, 5).map((p, i) => (
-              <motion.div
-                key={p.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-3"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary text-xs font-bold text-muted-foreground">{i + 1}</span>
-                <img src={p.image} alt={p.name} className="h-10 w-10 rounded-lg object-cover" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-foreground">{p.name}</div>
-                  <div className="text-xs text-muted-foreground">{p.category}</div>
-                </div>
-                <div className="text-sm font-semibold text-primary">{Math.floor(Math.random() * 50 + 20)} demandes</div>
-              </motion.div>
-            ))}
+          <h3 className="mb-4 font-semibold text-foreground">Activité récente</h3>
+          <div className="space-y-2">
+            {stats.recentInquiries.length > 0 ? (
+              stats.recentInquiries.map((inq, i) => (
+                <motion.div
+                  key={inq.id}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="flex items-center justify-between border-b border-border py-2 last:border-0"
+                >
+                  <div>
+                    <div className="font-medium text-foreground">{inq.name} {inq.surname}</div>
+                    <div className="text-xs text-muted-foreground">{inq.country}, {inq.town}</div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">{formatTimeAgo(inq.created_at)}</div>
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">Aucune activité récente</p>
+            )}
           </div>
         </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-        <h3 className="mb-4 font-semibold text-foreground">Demandes récentes</h3>
+        <h3 className="mb-4 font-semibold text-foreground">Dernières commandes WhatsApp</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left">
                 <th className="pb-3 font-medium text-muted-foreground">Client</th>
-                <th className="pb-3 font-medium text-muted-foreground">Matelas</th>
-                <th className="pb-3 font-medium text-muted-foreground">Canal</th>
+                <th className="pb-3 font-medium text-muted-foreground">Contact</th>
+                <th className="pb-3 font-medium text-muted-foreground">Localisation</th>
                 <th className="pb-3 font-medium text-muted-foreground">Quand</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {recentInquiries.map((inq, i) => (
-                <tr key={i}>
-                  <td className="py-3 font-medium text-foreground">{inq.name}</td>
-                  <td className="py-3 text-muted-foreground">{inq.product}</td>
-                  <td className="py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${inq.via === "WhatsApp" ? "bg-success/10 text-success" : "bg-primary/10 text-primary"}`}>
-                      {inq.via}
-                    </span>
+              {stats.recentInquiries.map((inq) => (
+                <tr key={inq.id}>
+                  <td className="py-3 font-medium text-foreground">{inq.name} {inq.surname}</td>
+                  <td className="py-3 text-muted-foreground">
+                    <div>{inq.email}</div>
+                    <div className="text-xs">{inq.country_code} {inq.phone_number}</div>
                   </td>
-                  <td className="py-3 text-muted-foreground">{inq.time}</td>
+                  <td className="py-3 text-muted-foreground">{inq.town}, {inq.country}</td>
+                  <td className="py-3 text-muted-foreground">{formatTimeAgo(inq.created_at)}</td>
                 </tr>
               ))}
+              {stats.recentInquiries.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-muted-foreground">
+                    Aucune commande récente
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   );
-}
+}  

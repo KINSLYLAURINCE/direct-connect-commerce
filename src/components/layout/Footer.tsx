@@ -1,17 +1,51 @@
 import { Link } from "@tanstack/react-router";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Loader2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 import logoEtcg from "@/assets/logo-etcg.png";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function Footer() {
   const { t } = useLang();
   const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) { setSubscribed(true); setEmail(""); }
+    
+    if (!email) return;
+    
+    setLoading(true);
+    setStatus("idle");
+    setMessage("");
+    
+    try {
+      const response = await fetch(`${API_URL}/newsletter/subscribe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de l'inscription");
+      }
+      
+      setStatus("success");
+      setMessage(data.message || "Inscription réussie ! Vérifiez votre email pour confirmer.");
+      setEmail("");
+    } catch (err: any) {
+      setStatus("error");
+      setMessage(err.message || "Une erreur est survenue");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,22 +105,38 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-foreground">{t("footer.newsletter")}</h3>
             <p className="mt-4 text-sm text-muted-foreground">{t("footer.newsletterDesc")}</p>
             <form onSubmit={handleSubscribe} className="mt-4">
-              {subscribed ? (
-                <p className="text-sm font-medium text-success">{t("footer.subscribed")}</p>
-              ) : (
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    required
-                  />
-                  <button type="submit" className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-105">
-                    OK
-                  </button>
+              {status === "success" ? (
+                <div className="flex items-center gap-2 rounded-lg bg-success/10 p-3">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <div>
+                    <p className="text-sm font-medium text-success">{t("footer.subscribed")}</p>
+                    <p className="text-xs text-muted-foreground">{message}</p>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@example.com"
+                      className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      required
+                      disabled={loading}
+                    />
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "OK"}
+                    </button>
+                  </div>
+                  {status === "error" && (
+                    <p className="mt-2 text-xs text-destructive">{message}</p>
+                  )}
+                </>
               )}
             </form>
           </div>

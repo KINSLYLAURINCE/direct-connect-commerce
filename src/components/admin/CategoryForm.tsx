@@ -1,61 +1,117 @@
 import { useState } from "react";
-import type { Category } from "@/lib/data";
-import ImagePicker from "./ImagePicker";
 
 interface CategoryFormProps {
-  initial?: Partial<Category>;
-  onSubmit: (data: Partial<Category>) => void;
+  initial?: any;
+  onSubmit: (formData: FormData) => void;
   onCancel: () => void;
 }
 
 export default function CategoryForm({ initial, onSubmit, onCancel }: CategoryFormProps) {
-  const [data, setData] = useState<Partial<Category>>({
-    name: initial?.name ?? "",
-    nameEn: initial?.nameEn ?? "",
-    image: initial?.image ?? "",
-  });
+  const [name, setName] = useState(initial?.name ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(
+    initial?.image ? `http://localhost:5000${initial.image}` : ""
+  );
+  const [loading, setLoading] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name) {
+      alert("Le nom est obligatoire");
+      return;
+    }
+
+    if (!initial && !image) {
+      alert("Veuillez ajouter une image");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+    if (image) {
+      formData.append("image", image);
+    }
+
+    await onSubmit(formData);
+    setLoading(false);
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!data.image) { alert("Veuillez ajouter une image."); return; }
-        onSubmit(data);
-      }}
-      className="space-y-4"
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Nom de la catégorie (FR)</label>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Nom de la catégorie *</label>
         <input
           required
-          value={data.name}
-          onChange={(e) => setData({ ...data, name: e.target.value })}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ex: Mémoire de Forme"
-        />
-      </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Nom (EN)</label>
-        <input
-          value={data.nameEn}
-          onChange={(e) => setData({ ...data, nameEn: e.target.value })}
-          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ex: Memory Foam"
+          placeholder="Ex: Électronique"
         />
       </div>
 
-      <ImagePicker
-        label="Image de la catégorie"
-        value={data.image ?? ""}
-        onChange={(url) => setData({ ...data, image: url })}
-      />
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Description</label>
+        <textarea
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="Description de la catégorie..."
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
+          Image {!initial && "*"}
+        </label>
+        {imagePreview && (
+          <div className="mb-2">
+            <img 
+              src={imagePreview} 
+              alt="Preview" 
+              className="h-20 w-20 rounded-lg object-cover border border-border" 
+            />
+          </div>
+        )}
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          onChange={handleImageChange}
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring file:mr-3 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1 file:text-sm file:font-medium file:text-primary"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Formats acceptés: JPG, PNG, GIF, WEBP (max 5MB)
+        </p>
+      </div>
 
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent">
+        <button 
+          type="button" 
+          onClick={onCancel}
+          disabled={loading}
+          className="flex-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+        >
           Annuler
         </button>
-        <button type="submit" className="flex-1 rounded-lg bg-gradient-blue px-4 py-2.5 text-sm font-semibold text-white shadow-md">
-          {initial?.name ? "Modifier" : "Ajouter"}
+        <button 
+          type="submit"
+          disabled={loading}
+          className="flex-1 rounded-lg bg-gradient-blue px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:scale-[1.02] transition-transform disabled:opacity-50"
+        >
+          {loading ? "Chargement..." : initial?.name ? "Modifier" : "Ajouter"}
         </button>
       </div>
     </form>

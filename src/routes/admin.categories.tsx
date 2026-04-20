@@ -1,28 +1,95 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { categories as initialCategories, type Category } from "@/lib/data";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import AdminModal from "@/components/admin/AdminModal";
 import CategoryForm from "@/components/admin/CategoryForm";
+import { api, type Category } from "@/lib/api";
 
 export const Route = createFileRoute("/admin/categories")({
   component: AdminCategories,
 });
 
 function AdminCategories() {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
 
-  const handleSubmit = (data: Partial<Category>) => {
-    if (editing) {
-      setCategories(categories.map((c) => c.id === editing.id ? { ...c, ...data } : c));
-    } else {
-      setCategories([...categories, { id: `cat-${Date.now()}`, ...data } as Category]);
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getCategories();
+      setCategories(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setModalOpen(false);
   };
+
+  const handleAdd = () => {
+    setEditing(null);
+    setModalOpen(true);
+  };
+
+  const handleEdit = (category: Category) => {
+    setEditing(category);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer cette catégorie ?")) return;
+    
+    try {
+      await api.deleteCategory(id);
+      setCategories(categories.filter((c) => c.id !== id));
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      if (editing) {
+        const updated = await api.updateCategory(editing.id, formData);
+        setCategories(categories.map((c) => c.id === editing.id ? updated : c));
+      } else {
+        const created = await api.createCategory(formData);
+        setCategories([...categories, created]);
+      }
+      setModalOpen(false);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Chargement des catégories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="text-center text-destructive">
+          <p>Erreur lors du chargement</p>
+          <p className="text-sm text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -32,7 +99,7 @@ function AdminCategories() {
           <p className="text-muted-foreground">{categories.length} catégories</p>
         </div>
         <button
-          onClick={() => { setEditing(null); setModalOpen(true); }}
+          onClick={handleAdd}
           className="inline-flex items-center gap-2 rounded-lg bg-gradient-blue px-4 py-2.5 text-sm font-medium text-white shadow-md hover:scale-105 transition-transform"
         >
           <Plus className="h-4 w-4" /> Ajouter
@@ -50,15 +117,26 @@ function AdminCategories() {
             className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <img src={cat.image} alt={cat.name} className="h-12 w-12 rounded-lg object-cover" />
+              <img 
+  src={cat.image ? `http://localhost:5000${cat.image}` : '/placeholder.jpg'} 
+  alt={cat.name} 
+  className="h-12 w-12 rounded-lg object-cover"
+  onError={(e) => {
+    (e.target as HTMLImageElement).src = '/placeholder.jpg';
+  }}
+/>
               <div>
                 <div className="font-medium text-foreground">{cat.name}</div>
-                <div className="text-sm text-muted-foreground">{cat.count} matelas</div>
+                <div className="text-sm text-muted-foreground">{cat.quantity} produits</div>
               </div>
             </div>
             <div className="flex gap-1">
-              <button onClick={() => { setEditing(cat); setModalOpen(true); }} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent"><Edit className="h-4 w-4" /></button>
-              <button onClick={() => confirm("Supprimer ?") && setCategories(categories.filter((c) => c.id !== cat.id))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+              <button onClick={() => handleEdit(cat)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent">
+                <Edit className="h-4 w-4" />
+              </button>
+              <button onClick={() => handleDelete(cat.id)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           </motion.div>
         ))}

@@ -1,136 +1,236 @@
-import { useState } from "react";
-import { categories, type Product } from "@/lib/data";
-import ImagePicker from "./ImagePicker";
-import MultiImagePicker from "./MultiImagePicker";
+import { useState, useEffect } from "react";
+import { api, type Category } from "@/lib/api";
 
 interface ProductFormProps {
-  initial?: Partial<Product>;
-  onSubmit: (data: Partial<Product>) => void;
+  initial?: any;
+  onSubmit: (formData: FormData) => void;
   onCancel: () => void;
 }
 
 export default function ProductForm({ initial, onSubmit, onCancel }: ProductFormProps) {
-  const [data, setData] = useState<Partial<Product>>({
-    name: initial?.name ?? "",
-    description: initial?.description ?? "",
-    price: initial?.price ?? 0,
-    salePrice: initial?.salePrice,
-    category: initial?.category ?? categories[0]?.id ?? "",
-    image: initial?.image ?? "",
-    images: initial?.images ?? [],
-    badge: initial?.badge ?? "",
-    available: initial?.available ?? true,
-  });
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [name, setName] = useState(initial?.name ?? "");
+  const [descriptionTitle, setDescriptionTitle] = useState(initial?.description_title ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [price, setPrice] = useState(initial?.price?.toString() ?? "");
+  const [soldPrice, setSoldPrice] = useState(initial?.sold_price?.toString() ?? "");
+  const [tag, setTag] = useState(initial?.tag ?? "");
+  const [categoryId, setCategoryId] = useState(initial?.category_id ?? "");
+  const [mainImage, setMainImage] = useState<File | null>(null);
+  const [subImages, setSubImages] = useState<FileList | null>(null);
+  const [mainImagePreview, setMainImagePreview] = useState<string>(
+    initial?.main_image ? `http://localhost:5000${initial.main_image}` : ""
+  );
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await api.getCategories();
+      setCategories(data);
+      if (!categoryId && data.length > 0) {
+        setCategoryId(data[0].id);
+      }
+    } catch (err) {
+      console.error("Erreur chargement catégories:", err);
+    }
+  };
+
+  const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMainImage(file);
+      setMainImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSubImages(e.target.files);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data.image) { alert("Veuillez ajouter une image principale."); return; }
-    onSubmit(data);
+    
+    if (!name || !price || !categoryId) {
+      alert("Veuillez remplir tous les champs obligatoires");
+      return;
+    }
+
+    if (!initial && !mainImage) {
+      alert("Veuillez ajouter une image principale");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description_title", descriptionTitle);
+    formData.append("description", description);
+    formData.append("price", price);
+    if (soldPrice) formData.append("sold_price", soldPrice);
+    if (tag) formData.append("tag", tag);
+    formData.append("category_id", categoryId);
+    
+    if (mainImage) {
+      formData.append("main_image", mainImage);
+    }
+    
+    if (subImages) {
+      Array.from(subImages).forEach((file) => {
+        formData.append("sub_images", file);
+      });
+    }
+
+    await onSubmit(formData);
+    setLoading(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Nom du produit</label>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Nom du produit *</label>
         <input
           required
-          value={data.name}
-          onChange={(e) => setData({ ...data, name: e.target.value })}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ex: CloudRest Mémoire 24cm"
+          placeholder="Ex: Smartphone Pro"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Titre description</label>
+        <input
+          value={descriptionTitle}
+          onChange={(e) => setDescriptionTitle(e.target.value)}
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="Ex: Flagship Killer"
         />
       </div>
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-foreground">Description</label>
         <textarea
-          required
           rows={3}
-          value={data.description}
-          onChange={(e) => setData({ ...data, description: e.target.value })}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Description du produit..."
+          placeholder="Description détaillée du produit..."
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-foreground">Prix (FCFA)</label>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">Prix (FCFA) *</label>
           <input
             type="number"
             required
             min={0}
-            value={data.price}
-            onChange={(e) => setData({ ...data, price: Number(e.target.value) })}
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            placeholder="Ex: 199.99"
           />
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-foreground">
-            Prix de solde (FCFA) <span className="text-xs text-muted-foreground">(optionnel)</span>
+            Prix soldé (FCFA) <span className="text-xs text-muted-foreground">(optionnel)</span>
           </label>
           <input
             type="number"
             min={0}
-            value={data.salePrice ?? ""}
-            onChange={(e) => setData({ ...data, salePrice: e.target.value ? Number(e.target.value) : undefined })}
+            step="0.01"
+            value={soldPrice}
+            onChange={(e) => setSoldPrice(e.target.value)}
             className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Ex: 199000"
+            placeholder="Ex: 149.99"
           />
         </div>
       </div>
 
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Catégorie</label>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Catégorie *</label>
         <select
-          value={data.category}
-          onChange={(e) => setData({ ...data, category: e.target.value })}
+          required
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
+          <option value="">Sélectionner une catégorie</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       </div>
 
-      <ImagePicker
-        label="Image principale"
-        value={data.image ?? ""}
-        onChange={(url) => setData({ ...data, image: url })}
-      />
-
-      <MultiImagePicker
-        label="Sous-images (galerie)"
-        values={data.images ?? []}
-        onChange={(urls) => setData({ ...data, images: urls })}
-      />
-
       <div>
-        <label className="mb-1.5 block text-sm font-medium text-foreground">Badge (optionnel)</label>
-        <input
-          value={data.badge}
-          onChange={(e) => setData({ ...data, badge: e.target.value })}
+        <label className="mb-1.5 block text-sm font-medium text-foreground">Tag</label>
+        <select
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
           className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          placeholder="Ex: Best-Seller, Nouveau..."
-        />
+        >
+          <option value="">Aucun</option>
+          <option value="best seller">Best Seller</option>
+          <option value="new">Nouveau</option>
+          <option value="sale">En solde</option>
+          <option value="featured">En vedette</option>
+          <option value="trending">Tendance</option>
+          <option value="limited">Édition limitée</option>
+        </select>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-foreground">
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
+          Image principale {!initial && "*"}
+        </label>
         <input
-          type="checkbox"
-          checked={data.available}
-          onChange={(e) => setData({ ...data, available: e.target.checked })}
-          className="rounded accent-primary"
+          type="file"
+          accept="image/*"
+          onChange={handleMainImageChange}
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        Disponible à la vente
-      </label>
+        {mainImagePreview && (
+          <img src={mainImagePreview} alt="Preview" className="mt-2 h-20 w-20 rounded-lg object-cover" />
+        )}
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
+          Sous-images <span className="text-xs text-muted-foreground">(optionnel, max 10)</span>
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleSubImagesChange}
+          className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        {subImages && (
+          <p className="mt-1 text-xs text-muted-foreground">{subImages.length} image(s) sélectionnée(s)</p>
+        )}
+      </div>
 
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          disabled={loading}
+          className="flex-1 rounded-lg border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+        >
           Annuler
         </button>
-        <button type="submit" className="flex-1 rounded-lg bg-gradient-blue px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:scale-[1.02] transition-transform">
-          {initial?.name ? "Modifier" : "Ajouter"}
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="flex-1 rounded-lg bg-gradient-blue px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:scale-[1.02] transition-transform disabled:opacity-50"
+        >
+          {loading ? "Chargement..." : initial?.name ? "Modifier" : "Ajouter"}
         </button>
       </div>
     </form>

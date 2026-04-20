@@ -1,10 +1,11 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, Search, User, Globe } from "lucide-react";
+import { Menu, X, Moon, Sun, Search, User, Globe, LogOut, Shield } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useLang } from "@/lib/i18n";
 import { products } from "@/lib/data";
 import logoEtcg from "@/assets/logo-etcg.png";
+import { useAuth } from "@/context/AuthContext";
 
 interface NavbarProps {
   isDark: boolean;
@@ -12,6 +13,8 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
+  const { isAuthenticated, logout, checkAuth } = useAuth();
+  const routerState = useRouterState();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -19,6 +22,10 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
   const navigate = useNavigate();
   const { lang, setLang, t } = useLang();
   const wrapRef = useRef<HTMLFormElement | null>(null);
+
+  useEffect(() => {
+    checkAuth();
+  }, [routerState.location.pathname]);
 
   const navLinks = [
     { to: "/" as const, label: t("nav.home") },
@@ -39,7 +46,6 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
       .slice(0, 6);
   }, [query]);
 
-  // Close suggestions on outside click
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (!wrapRef.current) return;
@@ -64,6 +70,12 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
     navigate({ to: "/products/$productId", params: { productId: id } });
   };
 
+  const handleLogout = async () => {
+    await logout();
+    setMobileOpen(false);
+    navigate({ to: "/login" });
+  };
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -82,9 +94,6 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
           />
           <span className="text-lg font-bold tracking-tight text-foreground">
             E.T.C.G
-            <span className="ml-1 hidden text-[10px] font-medium uppercase tracking-widest text-muted-foreground sm:inline">
-              Building & Public Work
-            </span>
           </span>
         </Link>
 
@@ -124,12 +133,31 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
           >
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <Link
-            to="/login"
-            className="hidden items-center gap-1.5 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white shadow-md shadow-primary/20 transition-transform hover:scale-105 md:inline-flex"
-          >
-            <User className="h-4 w-4" /> {t("nav.login")}
-          </Link>
+
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/admin"
+                className="hidden items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 md:inline-flex"
+              >
+                <Shield className="h-4 w-4" /> Admin
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="hidden items-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 md:inline-flex"
+              >
+                <LogOut className="h-4 w-4" /> Déconnexion
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden items-center gap-1.5 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white shadow-md shadow-primary/20 transition-transform hover:scale-105 md:inline-flex"
+            >
+              <User className="h-4 w-4" /> {t("nav.login")}
+            </Link>
+          )}
+
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="rounded-lg p-2 text-muted-foreground md:hidden"
@@ -217,32 +245,53 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
         )}
       </AnimatePresence>
 
-      {mobileOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="border-t border-border bg-background px-4 pb-4 md:hidden"
-        >
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link
-            to="/login"
-            onClick={() => setMobileOpen(false)}
-            className="mt-2 block rounded-lg bg-gradient-brand px-3 py-2.5 text-center text-sm font-medium text-white"
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-border bg-background px-4 pb-4 md:hidden"
           >
-            {t("nav.login")}
-          </Link>
-        </motion.div>
-      )}
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-2 flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2.5 text-sm font-medium text-primary"
+                >
+                  <Shield className="h-4 w-4" /> Administration
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 flex w-full items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive"
+                >
+                  <LogOut className="h-4 w-4" /> Déconnexion
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="mt-2 block rounded-lg bg-gradient-brand px-3 py-2.5 text-center text-sm font-medium text-white"
+              >
+                {t("nav.login")}
+              </Link>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }

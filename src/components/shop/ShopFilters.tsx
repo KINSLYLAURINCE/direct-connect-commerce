@@ -1,6 +1,8 @@
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { categories } from "@/lib/data";
 import { useLang } from "@/lib/i18n";
+import type { Category, Product } from "@/lib/api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 interface FilterSidebarProps {
   category: string;
@@ -9,6 +11,8 @@ interface FilterSidebarProps {
   setAvailable: (v: boolean) => void;
   open: boolean;
   setOpen: (v: boolean) => void;
+  categories: Category[];
+  products: Product[];
 }
 
 interface SearchBarProps {
@@ -38,8 +42,19 @@ export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) 
   );
 }
 
-export function FilterSidebar({ category, setCategory, available, setAvailable, open, setOpen }: FilterSidebarProps) {
-  const { t, lang } = useLang();
+export function FilterSidebar({ category, setCategory, available, setAvailable, open, setOpen, categories, products }: FilterSidebarProps) {
+  const { t } = useLang();
+  
+  const getImageUrl = (imagePath: string | null): string => {
+    if (!imagePath) return 'https://via.placeholder.com/24x24?text=Cat';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:5000${imagePath}`;
+  };
+
+  const getProductCount = (categoryId: string): number => {
+    return products.filter(p => p.category_id === categoryId).length;
+  };
+
   const filterContent = (
     <div className="space-y-6">
       <div>
@@ -49,26 +64,41 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
             onClick={() => setCategory("")}
             className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${!category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
           >
-            {t("shop.allCategories")}
+            {t("shop.allCategories")} ({products.length})
           </button>
-          {categories.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => setCategory(c.id === category ? "" : c.id)}
-              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${c.id === category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
-            >
-              <img src={c.image} alt="" className="h-6 w-6 rounded object-cover" />
-              <span>{lang === "fr" ? c.name : c.nameEn}</span>
-              <span className="ml-auto text-xs opacity-60">{c.count}</span>
-            </button>
-          ))}
+          {categories.map((c) => {
+            const count = getProductCount(c.id);
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCategory(c.id === category ? "" : c.id)}
+                className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${c.id === category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
+              >
+                <img 
+                  src={getImageUrl(c.image)} 
+                  alt={c.name} 
+                  className="h-6 w-6 rounded object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/24x24?text=Cat';
+                  }}
+                />
+                <span>{c.name}</span>
+                <span className="ml-auto text-xs opacity-60">{count}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       <div>
         <h3 className="mb-3 text-sm font-semibold text-foreground">{t("shop.availability")}</h3>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" checked={available} onChange={(e) => setAvailable(e.target.checked)} className="rounded accent-primary" />
+          <input 
+            type="checkbox" 
+            checked={available} 
+            onChange={(e) => setAvailable(e.target.checked)} 
+            className="rounded accent-primary" 
+          />
           {t("shop.onlyAvailable")}
         </label>
       </div>

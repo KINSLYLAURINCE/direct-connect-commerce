@@ -2,6 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, User } from "lucide-react";
+import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -13,32 +15,33 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-const ADMIN_EMAIL = "admin@demo.com";
-const ADMIN_PASSWORD = "admin123";
-
 function LoginPage() {
   const navigate = useNavigate();
+  const { checkAuth } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      if (typeof window !== "undefined") localStorage.setItem("dr_role", "admin");
+    setLoading(true);
+
+    try {
+      await api.login(email, password);
+      checkAuth();
       navigate({ to: "/admin" });
-    } else if (email && password) {
-      if (typeof window !== "undefined") localStorage.setItem("dr_role", "client");
-      navigate({ to: "/dashboard" });
-    } else {
-      setError("Veuillez remplir tous les champs");
+    } catch (err: any) {
+      setError(err.message || "Email ou mot de passe incorrect");
+    } finally {
+      setLoading(false);
     }
   };
 
   const useDemoAdmin = () => {
-    setEmail(ADMIN_EMAIL);
-    setPassword(ADMIN_PASSWORD);
+    setEmail("kingslydebruyne17@gmail.com");
+    setPassword("Admin123");
   };
 
   return (
@@ -68,6 +71,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="vous@email.fr"
+              required
             />
           </div>
           <div>
@@ -78,13 +82,16 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="••••••••"
+              required
             />
           </div>
           <button
             type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-blue py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-blue py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <User className="h-4 w-4" /> Se connecter
+            <User className="h-4 w-4" />
+            {loading ? "Connexion..." : "Se connecter"}
           </button>
 
           <button
@@ -92,11 +99,8 @@ function LoginPage() {
             onClick={useDemoAdmin}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
           >
-            <Shield className="h-4 w-4" /> Utiliser les identifiants admin démo
+            <Shield className="h-4 w-4" /> Utiliser les identifiants admin
           </button>
-          <p className="text-center text-xs text-muted-foreground">
-            Démo admin : <code className="font-mono">admin@demo.com</code> / <code className="font-mono">admin123</code>
-          </p>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground">

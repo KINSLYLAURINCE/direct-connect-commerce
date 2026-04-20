@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, Link, useLocation, useNavigate, redirect } fro
 import { LayoutDashboard, Package, Grid3X3, ShoppingBag, MessageCircle, BarChart3, Mail, Settings, ChevronLeft, Menu, LogOut, Home } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -10,12 +11,11 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "Tableau de bord administrateur DreamRest." },
     ],
   }),
-  beforeLoad: () => {
-    if (typeof window !== "undefined") {
-      const role = localStorage.getItem("dr_role");
-      if (role !== "admin") {
-        throw redirect({ to: "/login" });
-      }
+  beforeLoad: async () => {
+    if (typeof window === "undefined") return;
+    
+    if (!api.isAuthenticated()) {
+      throw redirect({ to: "/login" });
     }
   },
   component: AdminLayout,
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/admin")({
 
 const navItems = [
   { to: "/admin" as const, icon: LayoutDashboard, label: "Vue d'ensemble", exact: true },
-  { to: "/admin/products" as const, icon: Package, label: "Matelas", exact: false },
+  { to: "/admin/products" as const, icon: Package, label: "Produits", exact: false },
   { to: "/admin/categories" as const, icon: Grid3X3, label: "Catégories", exact: false },
   { to: "/admin/orders" as const, icon: ShoppingBag, label: "Commandes", exact: false },
   { to: "/admin/messages" as const, icon: MessageCircle, label: "Messages", exact: false },
@@ -35,18 +35,48 @@ const navItems = [
 function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [checking, setChecking] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const logout = () => {
-    if (typeof window !== "undefined") localStorage.removeItem("dr_role");
-    navigate({ to: "/" });
+  useEffect(() => {
+    const checkAuth = async () => {
+      if (!api.isAuthenticated()) {
+        navigate({ to: "/login" });
+        return;
+      }
+      
+      try {
+        await api.getProfile();
+        setChecking(false);
+      } catch (err) {
+        api.logout();
+        navigate({ to: "/login" });
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
+
+  const logout = async () => {
+    await api.logout();
+    navigate({ to: "/login" });
   };
+
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-4 text-muted-foreground">Vérification...</p>
+        </div>
+      </div>
+    );
+  }
 
   const Sidebar = ({ isMobile = false }: { isMobile?: boolean }) => (
     <div className="flex h-full flex-col bg-card">
@@ -70,8 +100,9 @@ function AdminLayout() {
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {navItems.map((item) => {
-          const isActive = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to) && item.to !== "/admin";
-          const showActive = item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to + "/") || location.pathname === item.to;
+          const showActive = item.exact 
+            ? location.pathname === item.to 
+            : location.pathname.startsWith(item.to + "/") || location.pathname === item.to;
           return (
             <Link
               key={item.to}
@@ -107,14 +138,12 @@ function AdminLayout() {
 
   return (
     <div className="flex min-h-screen pt-16">
-      {/* Desktop sidebar */}
       <aside className={`hidden border-r border-border transition-all duration-300 lg:block ${collapsed ? "w-16" : "w-60"}`}>
         <div className="sticky top-16 h-[calc(100vh-4rem)]">
           <Sidebar />
         </div>
       </aside>
 
-      {/* Mobile sidebar */}
       <AnimatePresence>
         {mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">

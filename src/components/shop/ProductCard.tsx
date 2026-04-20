@@ -1,15 +1,34 @@
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
-import type { Product } from "@/lib/data";
-import { formatFCFA } from "@/lib/data";
 import { useLang } from "@/lib/i18n";
+import type { Product } from "@/lib/api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+const formatFCFA = (price: number) => {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XAF',
+    maximumFractionDigits: 0
+  }).format(price);
+};
 
 export default function ProductCard({ product, index }: { product: Product; index: number }) {
   const { lang } = useLang();
-  const name = lang === "fr" ? product.name : (product.nameEn ?? product.name);
-  const description = lang === "fr" ? product.description : (product.descriptionEn ?? product.description);
-  const features = lang === "fr" ? product.features : (product.featuresEn ?? product.features);
-  const badge = product.badge ? (lang === "fr" ? product.badge : (product.badgeEn ?? product.badge)) : null;
+  
+  const imageUrl = product.main_image 
+    ? `http://localhost:5000${product.main_image}` 
+    : 'https://via.placeholder.com/300x200?text=No+Image';
+  
+  const badge = product.tag === 'best seller' 
+    ? (lang === "fr" ? "Meilleure vente" : "Best Seller")
+    : product.tag === 'new' 
+    ? (lang === "fr" ? "Nouveau" : "New")
+    : product.tag === 'sale'
+    ? (lang === "fr" ? "En solde" : "Sale")
+    : product.tag === 'featured'
+    ? (lang === "fr" ? "En vedette" : "Featured")
+    : null;
 
   return (
     <motion.div
@@ -20,37 +39,39 @@ export default function ProductCard({ product, index }: { product: Product; inde
     >
       <Link to="/products/$productId" params={{ productId: product.id }}>
         <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30">
-          <div className="relative aspect-[4/3] overflow-hidden">
+          <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
             <img
-              src={product.image}
-              alt={name}
+              src={imageUrl}
+              alt={product.name}
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=No+Image';
+              }}
             />
             {badge && (
               <span className="absolute top-3 left-3 rounded-full bg-gradient-blue px-3 py-1 text-xs font-semibold text-white shadow-lg">
                 {badge}
               </span>
             )}
-            {!product.available && (
-              <div className="absolute inset-0 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
-                <span className="rounded-full bg-card px-4 py-1 text-sm font-semibold text-foreground">
-                  {lang === "fr" ? "Bientôt" : "Soon"}
-                </span>
-              </div>
-            )}
           </div>
           <div className="p-5">
-            <div className="text-xs font-medium uppercase tracking-wider text-primary">{product.category}</div>
-            <h3 className="mt-1 font-semibold text-foreground">{name}</h3>
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{description}</p>
+            <div className="text-xs font-medium uppercase tracking-wider text-primary">
+              {product.category_name || 'Sans catégorie'}
+            </div>
+            <h3 className="mt-1 font-semibold text-foreground">{product.name}</h3>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+              {product.description_title || product.description || ''}
+            </p>
             <div className="mt-3 flex items-center justify-between gap-2">
-              <span className="text-base font-bold text-primary">{formatFCFA(product.price)}</span>
-              <div className="flex gap-1">
-                {features.slice(0, 1).map((f) => (
-                  <span key={f} className="rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">{f}</span>
-                ))}
-              </div>
+              <span className="text-base font-bold text-primary">
+                {formatFCFA(product.price)}
+              </span>
+              {product.sub_images && product.sub_images.length > 0 && (
+                <span className="rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
+                  +{product.sub_images.length}
+                </span>
+              )}
             </div>
           </div>
         </div>
