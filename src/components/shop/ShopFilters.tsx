@@ -78,7 +78,7 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
   return (
     <>
       <div className="hidden w-64 shrink-0 lg:block">
-        <div className="sticky top-24 rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-semibold text-foreground">{t("shop.filters")}</h2>
             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
