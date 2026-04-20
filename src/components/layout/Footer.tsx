@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
+import logoEtcg from "@/assets/logo-etcg.png";
 
 export default function Footer() {
   const { t } = useLang();
@@ -18,11 +19,9 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-blue">
-                <span className="text-sm font-bold text-white">DR</span>
-              </div>
-              <span className="text-lg font-bold text-foreground">DreamRest</span>
+            <div className="flex items-center gap-2.5">
+              <img src={logoEtcg} alt="ETCG" className="h-10 w-10 object-contain" />
+              <span className="text-lg font-bold text-foreground">E.T.C.G</span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{t("footer.tagline")}</p>
             <div className="mt-6 space-y-3">
@@ -84,7 +83,7 @@ export default function Footer() {
                     className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                   />
-                  <button type="submit" className="rounded-lg bg-gradient-blue px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-105">
+                  <button type="submit" className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white transition-transform hover:scale-105">
                     OK
                   </button>
                 </div>
@@ -94,7 +93,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © 2026 DreamRest. {t("footer.rights")}
+          © 2026 E.T.C.G — {t("footer.rights")}
         </div>
       </div>
     </footer>

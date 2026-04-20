@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { MessageCircle, Mail, ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { products, formatFCFA } from "@/lib/data";
 import { useState } from "react";
 import Footer from "@/components/layout/Footer";
+import ProductInquiryForm from "@/components/shop/ProductInquiryForm";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/products/$productId")({
@@ -54,13 +55,6 @@ function ProductDetailPage() {
   const priceLabel = formatFCFA(product.price);
 
   const images = [product.image, product.image, product.image];
-
-  const whatsappMsg = encodeURIComponent(
-    `Bonjour DreamRest !\n\nJe suis intéressé par :\n- Matelas : ${product.name}\n- Référence : ${product.id}\n- Prix : ${priceLabel}`
-  );
-  const emailBody = encodeURIComponent(
-    `Demande d'information\n\nMatelas : ${product.name}\nRéférence : ${product.id}\nPrix : ${priceLabel}`
-  );
 
   return (
     <>
@@ -140,21 +134,8 @@ function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href={`https://wa.me/221770000000?text=${whatsappMsg}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-success py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
-              >
-                <MessageCircle className="h-5 w-5" /> WhatsApp
-              </a>
-              <a
-                href={`mailto:contact@dreamrest.com?subject=Demande: ${product.name}&body=${emailBody}`}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-blue py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.02]"
-              >
-                <Mail className="h-5 w-5" /> Email
-              </a>
+            <div className="mt-8">
+              <ProductInquiryForm product={product} />
             </div>
           </motion.div>
         </div>
