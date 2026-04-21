@@ -1,11 +1,10 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, Search, User, Globe, LogOut, Shield } from "lucide-react";
+import { Menu, X, Moon, Sun, Search, Globe } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useLang } from "@/lib/i18n";
-import { products } from "@/lib/data";
+import { api } from "@/lib/api";
 import logoEtcg from "@/assets/logo-etcg.png";
-import { useAuth } from "@/context/AuthContext";
 
 interface NavbarProps {
   isDark: boolean;
@@ -13,19 +12,27 @@ interface NavbarProps {
 }
 
 export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
-  const { isAuthenticated, logout, checkAuth } = useAuth();
-  const routerState = useRouterState();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [showSuggest, setShowSuggest] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
   const navigate = useNavigate();
   const { lang, setLang, t } = useLang();
   const wrapRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
-    checkAuth();
-  }, [routerState.location.pathname]);
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const data = await api.getProducts();
+      setProducts(data);
+    } catch (err) {
+      console.error('Erreur chargement produits:', err);
+    }
+  };
 
   const navLinks = [
     { to: "/" as const, label: t("nav.home") },
@@ -40,11 +47,11 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
     if (!q) return [];
     return products
       .filter((p) => {
-        const hay = `${p.name} ${p.nameEn ?? ""} ${p.category} ${p.description}`.toLowerCase();
+        const hay = `${p.name} ${p.description_title || ""} ${p.description || ""} ${p.category_name || ""}`.toLowerCase();
         return hay.includes(q);
       })
       .slice(0, 6);
-  }, [query]);
+  }, [query, products]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -70,10 +77,12 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
     navigate({ to: "/products/$productId", params: { productId: id } });
   };
 
-  const handleLogout = async () => {
-    await logout();
-    setMobileOpen(false);
-    navigate({ to: "/login" });
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  const getImageUrl = (imagePath: string | null): string => {
+    if (!imagePath) return 'https://via.placeholder.com/50x50?text=No+Image';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://localhost:5000${imagePath}`;
   };
 
   return (
@@ -134,30 +143,6 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          {isAuthenticated ? (
-            <>
-              <Link
-                to="/admin"
-                className="hidden items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 md:inline-flex"
-              >
-                <Shield className="h-4 w-4" /> Admin
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="hidden items-center gap-1.5 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20 md:inline-flex"
-              >
-                <LogOut className="h-4 w-4" /> Déconnexion
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              className="hidden items-center gap-1.5 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white shadow-md shadow-primary/20 transition-transform hover:scale-105 md:inline-flex"
-            >
-              <User className="h-4 w-4" /> {t("nav.login")}
-            </Link>
-          )}
-
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="rounded-lg p-2 text-muted-foreground md:hidden"
@@ -202,7 +187,7 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
                     className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-border bg-popover shadow-2xl"
                   >
                     {suggestions.map((p) => {
-                      const name = lang === "fr" ? p.name : (p.nameEn ?? p.name);
+                      const name = p.name;
                       return (
                         <li key={p.id}>
                           <button
@@ -210,10 +195,10 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
                             onClick={() => pickSuggestion(p.id)}
                             className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent"
                           >
-                            <img src={p.image} alt="" className="h-10 w-12 shrink-0 rounded-md object-cover" />
+                            <img src={getImageUrl(p.main_image)} alt="" className="h-10 w-12 shrink-0 rounded-md object-cover" />
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium text-foreground">{name}</div>
-                              <div className="truncate text-xs text-muted-foreground">{p.category}</div>
+                              <div className="truncate text-xs text-muted-foreground">{p.category_name || 'Sans catégorie'}</div>
                             </div>
                           </button>
                         </li>
@@ -263,32 +248,6 @@ export default function Navbar({ isDark, toggleTheme }: NavbarProps) {
                 {link.label}
               </Link>
             ))}
-
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="mt-2 flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2.5 text-sm font-medium text-primary"
-                >
-                  <Shield className="h-4 w-4" /> Administration
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 flex w-full items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm font-medium text-destructive"
-                >
-                  <LogOut className="h-4 w-4" /> Déconnexion
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                onClick={() => setMobileOpen(false)}
-                className="mt-2 block rounded-lg bg-gradient-brand px-3 py-2.5 text-center text-sm font-medium text-white"
-              >
-                {t("nav.login")}
-              </Link>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
