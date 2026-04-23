@@ -1,11 +1,9 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
 import Navbar from "../components/layout/Navbar";
 import MobileNav from "../components/layout/MobileNav";
 import FloatingButtons from "../components/layout/FloatingButtons";
 import { useTheme } from "../lib/theme";
 import { LanguageProvider } from "../lib/i18n";
-
-import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
@@ -30,39 +28,9 @@ function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "DreamRest — Matelas Premium" },
-      { name: "description", content: "Matelas mémoire de forme, ressorts, latex et hybride. Livraison rapide, 100 nuits d'essai." },
-      { property: "og:title", content: "DreamRest — Matelas Premium" },
-      { property: "og:description", content: "Le sommeil que vous méritez." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-    ],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="fr">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { isDark, toggle } = useTheme();
