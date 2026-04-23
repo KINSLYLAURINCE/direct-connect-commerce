@@ -6,7 +6,7 @@ import { api, type Product } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import ProductInquiryForm from "@/components/shop/ProductInquiryForm";
 
-// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+// Variable d'environnement pour l'API
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const Route = createFileRoute("/products/$productId")({
@@ -21,7 +21,7 @@ const formatFCFA = (price: number) => {
   }).format(price);
 };
 
-// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images (déplacée en dehors du composant)
+// Fonction utilitaire pour obtenir l'URL complète des images
 const getImageUrl = (imagePath: string | null): string => {
   if (!imagePath) return 'https://via.placeholder.com/600x600?text=No+Image';
   if (imagePath.startsWith('http')) return imagePath;
@@ -99,9 +99,9 @@ function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center pt-16">
-        <h1 className="text-2xl font-bold text-foreground">Produit introuvable</h1>
-        <p className="mt-2 text-muted-foreground">Ce produit n'existe pas ou a été supprimé.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center pt-16 px-4">
+        <h1 className="text-2xl font-bold text-foreground text-center">Produit introuvable</h1>
+        <p className="mt-2 text-muted-foreground text-center">Ce produit n'existe pas ou a été supprimé.</p>
         <Link to="/shop" className="mt-6 rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-white">
           Retour à la boutique
         </Link>
@@ -116,26 +116,30 @@ function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pt-20 pb-16 sm:px-6 lg:px-8">
-      <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link to="/" className="hover:text-foreground">Accueil</Link>
+      {/* ✅ Fil d'Ariane responsive */}
+      <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+        <Link to="/" className="hover:text-foreground transition-colors">Accueil</Link>
         <span>/</span>
-        <Link to="/shop" className="hover:text-foreground">Boutique</Link>
+        <Link to="/shop" className="hover:text-foreground transition-colors">Boutique</Link>
         <span>/</span>
-        <span className="text-foreground">{name}</span>
+        <span className="text-foreground truncate max-w-[200px] sm:max-w-none">{name}</span>
       </nav>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      {/* ✅ Grille responsive: colonne sur mobile, 2 colonnes sur desktop */}
+      <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
+        
+        {/* ✅ Section Image - responsive */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="space-y-4"
         >
+          {/* Image principale avec taille responsive */}
           <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-secondary/20">
-            {/* ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur */}
             <img
               src={getImageUrl(images[activeImage])}
               alt={name}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain md:object-cover"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x600?text=No+Image';
               }}
@@ -144,20 +148,20 @@ function ProductDetailPage() {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-background"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-background sm:left-3"
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
                 <button
                   onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-background"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 shadow-md backdrop-blur-sm transition hover:bg-background sm:right-3"
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
               </>
             )}
             {product.tag && (
-              <span className="absolute top-3 left-3 rounded-full bg-gradient-blue px-3 py-1 text-xs font-semibold text-white shadow-lg">
+              <span className="absolute top-3 left-3 rounded-full bg-gradient-blue px-2 py-0.5 text-xs font-semibold text-white shadow-lg sm:px-3 sm:py-1">
                 {product.tag === 'best seller' 
                   ? (lang === "fr" ? "Meilleure vente" : "Best Seller")
                   : product.tag === 'new' 
@@ -168,23 +172,23 @@ function ProductDetailPage() {
               </span>
             )}
             {discount > 0 && (
-              <span className="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
+              <span className="absolute top-3 right-3 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white shadow-lg sm:px-3 sm:py-1">
                 -{discount}%
               </span>
             )}
           </div>
 
+          {/* ✅ Miniatures - défilement horizontal sur mobile */}
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
               {images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
-                  className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                    i === activeImage ? 'border-primary' : 'border-transparent'
+                  className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all sm:h-20 sm:w-20 ${
+                    i === activeImage ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'
                   }`}
                 >
-                  {/* ✅ CHANGEMENT 4 : Utiliser getImageUrl pour les miniatures */}
                   <img
                     src={getImageUrl(img)}
                     alt={`${name} ${i + 1}`}
@@ -199,48 +203,53 @@ function ProductDetailPage() {
           )}
         </motion.div>
 
+        {/* ✅ Section Informations - responsive */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="space-y-6"
+          className="space-y-4 sm:space-y-6"
         >
           <div>
-            <div className="text-sm font-medium text-primary">{product.category_name || 'Sans catégorie'}</div>
-            <h1 className="mt-2 text-3xl font-bold text-foreground">{name}</h1>
-            <p className="mt-3 text-muted-foreground">{description}</p>
+            <div className="text-xs sm:text-sm font-medium text-primary">{product.category_name || 'Sans catégorie'}</div>
+            <h1 className="mt-2 text-xl font-bold text-foreground sm:text-2xl md:text-3xl">{name}</h1>
+            <p className="mt-3 text-sm text-muted-foreground sm:text-base">{description}</p>
           </div>
 
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-primary">{formatFCFA(product.price)}</span>
+          {/* ✅ Prix responsive */}
+          <div className="flex items-baseline gap-2 sm:gap-3">
+            <span className="text-2xl font-bold text-primary sm:text-3xl">{formatFCFA(product.price)}</span>
             {originalPrice && (
-              <span className="text-lg text-muted-foreground line-through">{formatFCFA(originalPrice)}</span>
+              <span className="text-base text-muted-foreground line-through sm:text-lg">{formatFCFA(originalPrice)}</span>
             )}
           </div>
 
-          <div className="space-y-3 border-y border-border py-4">
+          {/* ✅ Caractéristiques */}
+          <div className="space-y-2 border-y border-border py-3 sm:space-y-3 sm:py-4">
             {features.map((feature, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <Check className="h-5 w-5 text-primary" />
+              <div key={i} className="flex items-center gap-2 text-xs sm:gap-3 sm:text-sm">
+                <Check className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
                 <span>{feature}</span>
               </div>
             ))}
           </div>
 
-          <div className="flex items-center gap-6 border-b border-border pb-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Truck className="h-4 w-4" />
+          {/* ✅ Garanties - responsive */}
+          <div className="flex flex-wrap gap-3 border-b border-border pb-3 text-xs text-muted-foreground sm:gap-6 sm:pb-4 sm:text-sm">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Truck className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Livraison gratuite</span>
             </div>
-            <div className="flex items-center gap-2">
-              <RotateCcw className="h-4 w-4" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Retours faciles</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
               <span>Garantie 10 ans</span>
             </div>
           </div>
 
+          {/* ✅ Formulaire de commande */}
           <ProductInquiryForm product={product} />
         </motion.div>
       </div>
