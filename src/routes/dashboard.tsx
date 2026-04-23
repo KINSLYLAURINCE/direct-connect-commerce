@@ -46,7 +46,7 @@ function DashboardPage() {
 
         <div className="space-y-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Mon Espace Client</h1>
+            <h1 className="text-2xl font-bold text-foreground">ace Client</h1>
             <p className="text-muted-foreground">Gérez votre profil et vos demandes</p>
           </div>
 

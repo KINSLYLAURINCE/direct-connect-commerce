@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Home, ShoppingBag, Grid3X3, User, MessageCircle } from "lucide-react";
+import { Home, ShoppingBag, Grid3X3, MessageCircle } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 
 export default function MobileNav() {
@@ -9,7 +9,6 @@ export default function MobileNav() {
     { to: "/shop" as const, icon: ShoppingBag, label: t("nav.shop") },
     { to: "/categories" as const, icon: Grid3X3, label: t("nav.categories") },
     { to: "/contact" as const, icon: MessageCircle, label: t("nav.contact") },
-    { to: "/dashboard" as const, icon: User, label: t("nav.account") },
   ];
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur pb-[env(safe-area-inset-bottom)] md:hidden">
