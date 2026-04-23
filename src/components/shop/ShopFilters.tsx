@@ -2,7 +2,8 @@ import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useLang } from "@/lib/i18n";
 import type { Category, Product } from "@/lib/api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 interface FilterSidebarProps {
   category: string;
@@ -42,14 +43,16 @@ export function SearchBar({ search, setSearch, onOpenFilters }: SearchBarProps) 
   );
 }
 
+// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/24x24?text=Cat';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
+
 export function FilterSidebar({ category, setCategory, available, setAvailable, open, setOpen, categories, products }: FilterSidebarProps) {
   const { t } = useLang();
-  
-  const getImageUrl = (imagePath: string | null): string => {
-    if (!imagePath) return 'https://via.placeholder.com/24x24?text=Cat';
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
 
   const getProductCount = (categoryId: string): number => {
     return products.filter(p => p.category_id === categoryId).length;
@@ -74,6 +77,7 @@ export function FilterSidebar({ category, setCategory, available, setAvailable, 
                 onClick={() => setCategory(c.id === category ? "" : c.id)}
                 className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${c.id === category ? "bg-gradient-blue text-white" : "text-muted-foreground hover:bg-accent"}`}
               >
+                {/* ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur */}
                 <img 
                   src={getImageUrl(c.image)} 
                   alt={c.name} 

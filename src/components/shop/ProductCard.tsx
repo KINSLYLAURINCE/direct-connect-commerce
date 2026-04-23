@@ -3,7 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useLang } from "@/lib/i18n";
 import type { Product } from "@/lib/api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const formatFCFA = (price: number) => {
   return new Intl.NumberFormat('fr-FR', {
@@ -13,12 +14,19 @@ const formatFCFA = (price: number) => {
   }).format(price);
 };
 
+// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/300x200?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
+
 export default function ProductCard({ product, index }: { product: Product; index: number }) {
   const { lang } = useLang();
   
-  const imageUrl = product.main_image 
-    ? `http://localhost:5000${product.main_image}` 
-    : 'https://via.placeholder.com/300x200?text=No+Image';
+  // ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur
+  const imageUrl = getImageUrl(product.main_image);
   
   const badge = product.tag === 'best seller' 
     ? (lang === "fr" ? "Meilleure vente" : "Best Seller")

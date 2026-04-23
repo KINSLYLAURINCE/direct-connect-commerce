@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Shield, User } from "lucide-react";
+import { User } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -30,18 +30,13 @@ function LoginPage() {
 
     try {
       await api.login(email, password);
-      checkAuth();
+      await checkAuth();
       navigate({ to: "/admin" });
     } catch (err: any) {
       setError(err.message || "Email ou mot de passe incorrect");
     } finally {
       setLoading(false);
     }
-  };
-
-  const useDemoAdmin = () => {
-    setEmail("kingslydebruyne17@gmail.com");
-    setPassword("Admin123");
   };
 
   return (
@@ -55,16 +50,21 @@ function LoginPage() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-blue shadow-lg shadow-primary/30">
             <span className="text-lg font-bold text-white">DR</span>
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-foreground">Bienvenue</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Connectez-vous à votre compte DreamRest</p>
+          <h1 className="mt-4 text-2xl font-bold text-foreground">Connexion</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Connectez-vous à votre compte</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-4 rounded-2xl border border-border bg-card p-8 shadow-lg">
           {error && (
-            <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</div>
+            <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
           )}
+          
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -74,8 +74,11 @@ function LoginPage() {
               required
             />
           </div>
+
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Mot de passe</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">
+              Mot de passe
+            </label>
             <input
               type="password"
               value={password}
@@ -85,6 +88,7 @@ function LoginPage() {
               required
             />
           </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -93,19 +97,7 @@ function LoginPage() {
             <User className="h-4 w-4" />
             {loading ? "Connexion..." : "Se connecter"}
           </button>
-
-          <button
-            type="button"
-            onClick={useDemoAdmin}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary/5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
-          >
-            <Shield className="h-4 w-4" /> Utiliser les identifiants admin
-          </button>
         </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Pas encore de compte ? <Link to="/register" className="font-medium text-primary hover:underline">Créer un compte client</Link>
-        </p>
       </motion.div>
     </div>
   );

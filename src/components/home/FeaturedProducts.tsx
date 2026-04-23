@@ -5,12 +5,23 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n";
 import { api, type Product } from "@/lib/api";
 
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const formatFCFA = (price: number) => {
   return new Intl.NumberFormat('fr-FR', {
     style: 'currency',
     currency: 'XAF',
     maximumFractionDigits: 0
   }).format(price);
+};
+
+// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/400x300?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
 };
 
 export default function FeaturedProducts() {
@@ -92,13 +103,18 @@ export default function FeaturedProducts() {
             >
               <div className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
                 <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+                  {/* ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur */}
                   <img
                     key={`img-${product.id}-${i}`}
-                    src={`http://localhost:5000${product.main_image}`}
+                    src={getImageUrl(product.main_image)}
                     alt={product.name}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
                     onLoad={() => console.log('✅ Image loaded:', product.name)}
-                    onError={(e) => console.log('❌ Image failed:', product.main_image)}
+                    onError={(e) => {
+                      console.log('❌ Image failed:', product.main_image);
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x300?text=No+Image';
+                    }}
                   />
                   {product.tag && (
                     <span className="absolute top-3 left-3 rounded-full bg-gradient-blue px-3 py-1 text-xs font-semibold text-white shadow-lg">

@@ -1,17 +1,30 @@
 import { useState } from "react";
 
+// ✅ Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 interface CategoryFormProps {
   initial?: any;
   onSubmit: (formData: FormData) => void;
   onCancel: () => void;
 }
 
+// ✅ Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
+
 export default function CategoryForm({ initial, onSubmit, onCancel }: CategoryFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState<File | null>(null);
+  
+  // ✅ Utilisation de getImageUrl pour l'aperçu
   const [imagePreview, setImagePreview] = useState<string>(
-    initial?.image ? `http://localhost:5000${initial.image}` : ""
+    initial?.image ? getImageUrl(initial.image) : ""
   );
   const [loading, setLoading] = useState(false);
 

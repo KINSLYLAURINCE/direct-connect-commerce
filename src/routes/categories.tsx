@@ -21,6 +21,9 @@ function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // ✅ CHANGEMENT 1 : Récupérer l'URL de l'API depuis les variables d'environnement
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
   useEffect(() => {
     loadCategories();
   }, []);
@@ -37,10 +40,14 @@ function CategoriesPage() {
     }
   };
 
+  // ✅ CHANGEMENT 2 : Utiliser l'URL de l'API pour construire les URLs des images
   const getImageUrl = (imagePath: string | null): string => {
     if (!imagePath) return 'https://via.placeholder.com/400x300?text=No+Image';
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
+    
+    // Extraire l'URL de base sans le /api à la fin
+    const baseUrl = API_URL.replace('/api', '');
+    return `${baseUrl}${imagePath}`;
   };
 
   if (loading) {

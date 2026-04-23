@@ -6,9 +6,20 @@ import AdminModal from "@/components/admin/AdminModal";
 import CategoryForm from "@/components/admin/CategoryForm";
 import { api, type Category } from "@/lib/api";
 
+// ✅ Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export const Route = createFileRoute("/admin/categories")({
   component: AdminCategories,
 });
+
+// ✅ Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/48x48?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
 
 function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -117,14 +128,15 @@ function AdminCategories() {
             className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 shadow-sm"
           >
             <div className="flex items-center gap-3">
+              {/* ✅ Utilisation de getImageUrl au lieu de l'URL en dur */}
               <img 
-  src={cat.image ? `http://localhost:5000${cat.image}` : '/placeholder.jpg'} 
-  alt={cat.name} 
-  className="h-12 w-12 rounded-lg object-cover"
-  onError={(e) => {
-    (e.target as HTMLImageElement).src = '/placeholder.jpg';
-  }}
-/>
+                src={getImageUrl(cat.image)} 
+                alt={cat.name} 
+                className="h-12 w-12 rounded-lg object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=No+Image';
+                }}
+              />
               <div>
                 <div className="font-medium text-foreground">{cat.name}</div>
                 <div className="text-sm text-muted-foreground">{cat.quantity} produits</div>

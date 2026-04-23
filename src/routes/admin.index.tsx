@@ -4,9 +4,20 @@ import { Package, ShoppingBag, MessageCircle, TrendingUp, ArrowUpRight } from "l
 import { useState, useEffect } from "react";
 import { api, type Product, type WhatsAppInquiry, type ContactMessage } from "@/lib/api";
 
+// Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export const Route = createFileRoute("/admin/")({
   component: AdminOverview,
 });
+
+// Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/40x40?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
 
 function AdminOverview() {
   const [stats, setStats] = useState({
@@ -165,7 +176,7 @@ function AdminOverview() {
                     {i + 1}
                   </span>
                   <img 
-                    src={p.main_image ? `http://localhost:5000${p.main_image}` : '/placeholder.jpg'} 
+                    src={getImageUrl(p.main_image)} 
                     alt={p.name} 
                     className="h-10 w-10 rounded-lg object-cover"
                   />
@@ -247,4 +258,4 @@ function AdminOverview() {
       </div>
     </div>
   );
-}  
+}

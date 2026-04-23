@@ -1,11 +1,22 @@
 import { useState, useEffect } from "react";
 import { api, type Category } from "@/lib/api";
 
+// ✅ Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 interface ProductFormProps {
   initial?: any;
   onSubmit: (formData: FormData) => void;
   onCancel: () => void;
 }
+
+// ✅ Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return '';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
 
 export default function ProductForm({ initial, onSubmit, onCancel }: ProductFormProps) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -18,8 +29,10 @@ export default function ProductForm({ initial, onSubmit, onCancel }: ProductForm
   const [categoryId, setCategoryId] = useState(initial?.category_id ?? "");
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [subImages, setSubImages] = useState<FileList | null>(null);
+  
+  // ✅ Utilisation de getImageUrl pour l'aperçu
   const [mainImagePreview, setMainImagePreview] = useState<string>(
-    initial?.main_image ? `http://localhost:5000${initial.main_image}` : ""
+    initial?.main_image ? getImageUrl(initial.main_image) : ""
   );
   const [loading, setLoading] = useState(false);
 

@@ -6,7 +6,8 @@ import { api, type Product } from "@/lib/api";
 import { useLang } from "@/lib/i18n";
 import ProductInquiryForm from "@/components/shop/ProductInquiryForm";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export const Route = createFileRoute("/products/$productId")({
   component: ProductDetailPage,
@@ -18,6 +19,14 @@ const formatFCFA = (price: number) => {
     currency: 'XAF',
     maximumFractionDigits: 0
   }).format(price);
+};
+
+// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images (déplacée en dehors du composant)
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/600x600?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
 };
 
 // Descriptions statiques des produits
@@ -105,12 +114,6 @@ function ProductDetailPage() {
   const originalPrice = product.sold_price && product.sold_price > product.price ? product.sold_price : null;
   const discount = originalPrice ? Math.round(((originalPrice - product.price) / originalPrice) * 100) : 0;
 
-  const getImageUrl = (path: string) => {
-    if (!path) return 'https://via.placeholder.com/600x600?text=No+Image';
-    if (path.startsWith('http')) return path;
-    return `http://localhost:5000${path}`;
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 pt-20 pb-16 sm:px-6 lg:px-8">
       <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
@@ -128,6 +131,7 @@ function ProductDetailPage() {
           className="space-y-4"
         >
           <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-secondary/20">
+            {/* ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur */}
             <img
               src={getImageUrl(images[activeImage])}
               alt={name}
@@ -180,6 +184,7 @@ function ProductDetailPage() {
                     i === activeImage ? 'border-primary' : 'border-transparent'
                   }`}
                 >
+                  {/* ✅ CHANGEMENT 4 : Utiliser getImageUrl pour les miniatures */}
                   <img
                     src={getImageUrl(img)}
                     alt={`${name} ${i + 1}`}

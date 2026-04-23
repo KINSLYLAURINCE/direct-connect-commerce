@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useLang } from "@/lib/i18n";
 import { api, type Category } from "@/lib/api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function CategoryCards() {
   const { t, lang } = useLang();
@@ -26,10 +27,13 @@ export default function CategoryCards() {
     }
   };
 
+  // ✅ CHANGEMENT 2 : Utiliser l'URL de l'API pour construire les URLs des images
   const getImageUrl = (imagePath: string | null): string => {
     if (!imagePath) return 'https://via.placeholder.com/400x240?text=No+Image';
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
+    // Extraire l'URL de base sans le /api à la fin
+    const baseUrl = API_URL.replace('/api', '');
+    return `${baseUrl}${imagePath}`;
   };
 
   if (loading) {

@@ -6,9 +6,20 @@ import AdminModal from "@/components/admin/AdminModal";
 import ProductForm from "@/components/admin/ProductForm";
 import { api, type Product } from "@/lib/api";
 
+// ✅ CHANGEMENT 1 : Variable d'environnement pour l'API (sans /api à la fin pour les images)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export const Route = createFileRoute("/admin/products")({
   component: AdminProducts,
 });
+
+// ✅ CHANGEMENT 2 : Fonction utilitaire pour obtenir l'URL complète des images
+const getImageUrl = (imagePath: string | null): string => {
+  if (!imagePath) return 'https://via.placeholder.com/40x40?text=No+Image';
+  if (imagePath.startsWith('http')) return imagePath;
+  const baseUrl = API_URL.replace('/api', '');
+  return `${baseUrl}${imagePath}`;
+};
 
 function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -138,46 +149,47 @@ function AdminProducts() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-  {filtered.map((product, i) => (
-    <tr key={product.id}>
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-3">
-          <img 
-            src={product.main_image ? `http://localhost:5000${product.main_image}` : '/placeholder.jpg'} 
-            alt={product.name} 
-            className="h-10 w-10 rounded-lg object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.jpg';
-            }}
-          />
-          <div>
-            <div className="font-medium text-foreground">{product.name}</div>
-            <div className="text-xs text-muted-foreground">{product.id.slice(0, 8)}...</div>
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-3 text-muted-foreground">{product.category_name}</td>
-      <td className="px-4 py-3 font-medium text-foreground">{formatFCFA(product.price)}</td>
-      <td className="px-4 py-3">
-        {product.tag && (
-          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            {product.tag}
-          </span>
-        )}
-      </td>
-      <td className="px-4 py-3">
-        <div className="flex gap-2">
-          <button onClick={() => handleEdit(product)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground">
-            <Edit className="h-4 w-4" />
-          </button>
-          <button onClick={() => handleDelete(product.id)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            {filtered.map((product, i) => (
+              <tr key={product.id}>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    {/* ✅ CHANGEMENT 3 : Utiliser getImageUrl au lieu de l'URL en dur */}
+                    <img 
+                      src={getImageUrl(product.main_image)} 
+                      alt={product.name} 
+                      className="h-10 w-10 rounded-lg object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/40x40?text=No+Image';
+                      }}
+                    />
+                    <div>
+                      <div className="font-medium text-foreground">{product.name}</div>
+                      <div className="text-xs text-muted-foreground">{product.id.slice(0, 8)}...</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">{product.category_name}</td>
+                <td className="px-4 py-3 font-medium text-foreground">{formatFCFA(product.price)}</td>
+                <td className="px-4 py-3">
+                  {product.tag && (
+                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                      {product.tag}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEdit(product)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => handleDelete(product.id)} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
 

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
       { title: "Boutique — DreamRest Matelas Premium" },
-      { name: "description", content: "Découvrez tous nos matelas : mémoire de forme, ressorts, latex, hybride, orthopédique." },
+      { description: "Découvrez tous nos matelas : mémoire de forme, ressorts, latex, hybride, orthopédique." },
       { property: "og:title", content: "Boutique — DreamRest Matelas Premium" },
       { property: "og:description", content: "Tous nos matelas premium." },
     ],
@@ -36,6 +36,9 @@ function ShopPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
+
+  // ✅ CHANGEMENT 1 : Récupérer l'URL de l'API depuis les variables d'environnement
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     loadData();

@@ -52,6 +52,9 @@ export default function ProductInquiryForm({ product }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
+  // ✅ CHANGEMENT 1 : Récupérer l'URL de l'API depuis les variables d'environnement
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
   const dial = useMemo(() => findCountry(form.country)?.dial ?? "+237", [form.country]);
 
   const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -74,6 +77,8 @@ export default function ProductInquiryForm({ product }: Props) {
 
     try {
       // 1. Sauvegarder la commande dans la base de données
+      // Note: api.createWhatsAppInquiry utilise déjà la variable d'environnement
+      // car la fonction api est configurée avec VITE_API_URL
       const response = await api.createWhatsAppInquiry({
         name: parsed.data.firstName,
         surname: parsed.data.lastName,
