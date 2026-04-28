@@ -6,7 +6,7 @@ import type { Product } from "@/lib/api";
 import { COUNTRIES, findCountry } from "@/lib/countries";
 import { api } from "@/lib/api";
 
-const WHATSAPP_NUMBER = "237690981048";
+const WHATSAPP_NUMBER = "237674435332";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (

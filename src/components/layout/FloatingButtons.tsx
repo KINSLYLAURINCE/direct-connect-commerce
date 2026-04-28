@@ -41,7 +41,7 @@ export default function FloatingButtons() {
         <motion.a
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
-          href="https://wa.me/33600000000?text=Bonjour%20DreamRest"
+          href="https://wa.me/674435332?text=Bonjour%20DreamRest"
           target="_blank"
           rel="noopener noreferrer"
           className="flex h-14 w-14 items-center justify-center rounded-full bg-success text-white shadow-2xl shadow-success/40"

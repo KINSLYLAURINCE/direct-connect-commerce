@@ -61,11 +61,11 @@ export default function Footer() {
             <div className="mt-6 space-y-3">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>contact@etcg.com</span>
+                <span>nounkouaalexsedard@gmail.com</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                <span>+237 00 000 00 00</span>
+                <span>+237 674435332</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
