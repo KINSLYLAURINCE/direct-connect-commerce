@@ -7,6 +7,9 @@ import Footer from "@/components/layout/Footer";
 // ✅ Variable d'environnement pour l'API
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+// ✅ WhatsApp number (without + or spaces)
+const WHATSAPP_NUMBER = "237674435332";
+
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
@@ -31,6 +34,25 @@ function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
+
+  const openWhatsApp = (name: string, email: string, phone: string, message: string) => {
+    const text = [
+      `👋 Nouveau message depuis le site DreamRest`,
+      ``,
+      `👤 Nom : ${name}`,
+      `📧 Email : ${email}`,
+      phone ? `📞 Téléphone : ${phone}` : null,
+      ``,
+      `💬 Message :`,
+      message,
+    ]
+      .filter((line) => line !== null)
+      .join("\n");
+
+    const encodedText = encodeURIComponent(text);
+    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedText}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +84,10 @@ function ContactPage() {
       }
 
       setSent(true);
+
+      // ✅ Open WhatsApp conversation with the form data
+      openWhatsApp(form.name, form.email, form.phone_number, form.message);
+
       setForm({ name: "", surname: "", email: "", phone_number: "", message: "" });
     } catch (err: any) {
       setError(err.message);
@@ -76,9 +102,9 @@ function ContactPage() {
     }`;
 
   const contactItems = [
-    { icon: Mail, label: "Email", value: "contact@dreamrest.cm", href: "mailto:contact@dreamrest.cm", color: "from-blue-500/20 to-indigo-500/20" },
-    { icon: Phone, label: "Téléphone", value: "+237 6 00 00 00 00", href: "tel:+237600000000", color: "from-sky-500/20 to-blue-500/20" },
-    { icon: MessageCircle, label: "WhatsApp", value: "Discutez avec nous", href: "https://wa.me/237600000000", color: "from-emerald-500/20 to-teal-500/20" },
+    { icon: Mail, label: "Email", value: "nounkouaalexsedard@gmail.com", href: "mailto:nounkouaalexsedard@gmail.com", color: "from-blue-500/20 to-indigo-500/20" },
+    { icon: Phone, label: "Téléphone", value: "+237 674 435 332", href: "tel:+237674435332", color: "from-sky-500/20 to-blue-500/20" },
+    { icon: MessageCircle, label: "WhatsApp", value: "Discutez avec nous", href: `https://wa.me/${WHATSAPP_NUMBER}`, color: "from-emerald-500/20 to-teal-500/20" },
     { icon: MapPin, label: "Showroom", value: "Avenue Kennedy, Douala, Cameroun", href: "#", color: "from-violet-500/20 to-purple-500/20" },
   ];
 
@@ -160,7 +186,12 @@ function ContactPage() {
                   </span>
                 </motion.div>
                 <h3 className="mt-6 text-2xl font-bold text-foreground">Message envoyé !</h3>
-                <p className="mt-2 text-muted-foreground">Nous vous répondrons dans les plus brefs délais.</p>
+                <p className="mt-2 text-muted-foreground">
+                  Nous vous répondrons dans les plus brefs délais.
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground/70">
+                  WhatsApp a été ouvert avec votre message.
+                </p>
                 <button
                   onClick={() => setSent(false)}
                   className="mt-8 inline-flex items-center gap-2 rounded-xl bg-gradient-blue px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 hover:scale-[1.03] active:scale-[0.98]"
@@ -276,6 +307,12 @@ function ContactPage() {
                     </span>
                     <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   </motion.button>
+
+                  {/* ✅ WhatsApp hint below the button */}
+                  <p className="text-center text-xs text-muted-foreground/60">
+                    <MessageCircle className="inline h-3 w-3 mr-1 text-emerald-500" />
+                    L'envoi ouvrira également une conversation WhatsApp avec votre message.
+                  </p>
                 </div>
               </form>
             )}
